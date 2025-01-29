@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error - Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>Validation Errors</h1>
+<div th:if="${not #lists.isEmpty(fieldErrors)}">
+    <div th:each="fieldError : ${fieldErrors}">
+        <div class="error-message">
+            <strong th:text="${fieldError}">Field Error</strong>
+        </div>
+    </div>
+</div>
+
+<div th:if="${#lists.isEmpty(fieldErrors)}">
+    <p>No validation errors found.</p>
+</div>
+
+<hr>
+<a href="/" th:href="@{/}">Back to Home</a>
+</body>
+</html>
