@@ -97,6 +97,30 @@ public class Product implements Parent{
         this.user = user;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Boolean getIs_check() {
+        return is_check;
+    }
+
+    public void setIs_check(Boolean is_check) {
+        this.is_check = is_check;
+    }
+
     @Override
     public String toString() {
         return "Product{" +

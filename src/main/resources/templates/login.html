@@ -1,25 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Sign-Up</title>
 </head>
 <body>
 
-<form method="post">
-    <label for="username">Username</label>
-    <br>
-    <input id="username" name="username" placeholder="John">
+<!-- Login Form -->
+<div>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <label for="username">Username</label>
+        <br>
+        <input type="text" id="loginUsername" name="username" placeholder="Enter your username" required>
+        <br><br>
+        <label for="password">Password</label>
+        <br>
+        <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
+        <br><br>
+        <button type="submit">Login</button>
+    </form>
+</div>
 
-    <br>
-    <label for="password">Password</label>
-    <br>
-    <input type="password" id="password" name="password" placeholder="John">
-    <br>
+<hr>
 
-    <button type="submit">Login</button>
-</form>
+
+<script>
+    // Handle Login form submission
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        fetch('http://localhost:8080/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username, password: password })
+        })
+            .then(response => {
+                if (!response.ok) {  // Check if the response is successful
+                    return response.text();  // Get the response body as text (error message)
+                }
+                else {
+                    window.location.href = 'category.html';
+                    console.log(lllll);
+                }
+                 // Otherwise, parse as JSON for success
+            })
+
+               
+
+                     // Show error message (for invalid login)
+
+
+            .catch(error => console.error('Error:', error));
+    });
+
+
+
+</script>
 
 </body>
 </html>

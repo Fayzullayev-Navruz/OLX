@@ -24,7 +24,7 @@ public class HomeController {
     }
 
 //    @PreAuthorize("hasAnyRole('USER')")//getAuthorities().contains(ROLE_USER)
-    @PreAuthorize("hasAnyRole(T(uz.pdp.securitytest.enums.RoleEnum).USER.name(),T(uz.pdp.securitytest.enums.RoleEnum).MANAGER.name())")
+//    @PreAuthorize("hasAnyRole(T(uz.pdp.securitytest.enums.RoleEnum).USER.name(),T(uz.pdp.securitytest.enums.RoleEnum).MANAGER.name())")
     @GetMapping("/product-test")
     public String product(HttpServletRequest request) {
 

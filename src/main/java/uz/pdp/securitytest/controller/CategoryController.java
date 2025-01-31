@@ -1,5 +1,6 @@
 package uz.pdp.securitytest.controller;
 
+import jakarta.servlet.annotation.MultipartConfig;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,9 +25,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+@MultipartConfig
 @RestController
 @RequestMapping("/category")
+@CrossOrigin(origins = "http://localhost:63342")
 public class CategoryController {
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
@@ -37,8 +39,8 @@ public class CategoryController {
         this.attachmentRepository = attachmentRepository;
     }
 
-    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
-    @GetMapping()
+//    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+    @GetMapping
     public List<CategoryDto>read() {
         ModelAndView modelAndView = new ModelAndView("category");
         List<Category> categories = categoryRepository.findAll();
@@ -55,13 +57,12 @@ public class CategoryController {
         return categoriesDto;
     }
 
-    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CREATE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+//    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CREATE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @PostMapping("/create")
-    public void create(@ModelAttribute CategoryDto categoryDto,
-                         @RequestParam MultipartFile image) throws IOException {
+    public void create(@RequestParam("name") String name,
+                       @RequestParam("image") MultipartFile image) throws IOException {
         Category category = new Category();
-        category.setName(categoryDto.getName());
-
+        category.setName(name);
         if (!image.isEmpty()) {
             String contentType = image.getContentType();
             String originalFilename = image.getOriginalFilename();
@@ -77,9 +78,9 @@ public class CategoryController {
      read();
     }
 
-    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+  //  @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @PostMapping("/update")
-    public void edit(@ModelAttribute CategoryDto categoryDto,
+    public void edit(@RequestBody CategoryDto categoryDto,
                        @RequestParam(required = false) MultipartFile image) throws IOException {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryDto.getId());
         if (optionalCategory.isPresent()) {
@@ -103,7 +104,7 @@ public class CategoryController {
         read();
     }
 
-    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).DELETE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+   // @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).DELETE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @GetMapping("/delete/{id}")
     public void delete(@PathVariable Integer id) {
         categoryRepository.findById(id).ifPresent(categoryRepository::delete);

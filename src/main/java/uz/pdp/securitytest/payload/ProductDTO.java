@@ -21,7 +21,20 @@ public class ProductDTO {
     private Category category;
     @NotBlank(message = "imageUrl not be null")
     private String imageUrl;
+    private String description;
 
+
+    private Boolean isActive = false;
+
+    private Boolean is_check = false;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     private MultipartFile image;
 
@@ -63,6 +76,22 @@ public class ProductDTO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Boolean getIs_check() {
+        return is_check;
+    }
+
+    public void setIs_check(Boolean is_check) {
+        this.is_check = is_check;
     }
 
     @Override

@@ -1,13 +1,24 @@
 package uz.pdp.securitytest.payload;
 
+import org.springframework.web.multipart.MultipartFile;
 import uz.pdp.securitytest.entity.Category;
 
 import javax.validation.constraints.NotBlank;
 
 public class CategoryDto {
     private Integer id;
-@NotBlank
+    @NotBlank
     private String name;
+
+    private MultipartFile image;
+
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
+    }
 
     public CategoryDto(Integer id, String name, String filePath) {
         this.id = id;
@@ -15,7 +26,7 @@ public class CategoryDto {
     }
 
     public CategoryDto() {
-        
+
     }
 
     public CategoryDto(Category category) {

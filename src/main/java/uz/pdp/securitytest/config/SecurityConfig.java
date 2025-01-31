@@ -50,12 +50,12 @@ public class SecurityConfig {
                 .authenticated()
         );
 
-        http.formLogin(conf -> conf
+        /*http.formLogin(conf -> conf
                 .loginPage("/auth/login")
                 .usernameParameter("username")
                 .passwordParameter("password")
                 .loginProcessingUrl("/auth/login")
-        );
+        );*/
 
         return http.build();
     }
