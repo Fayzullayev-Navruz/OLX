@@ -1,30 +1,24 @@
+
 package uz.pdp.securitytest.controller;
 
 import jakarta.servlet.annotation.MultipartConfig;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 import uz.pdp.securitytest.entity.Attachment;
 import uz.pdp.securitytest.entity.Category;
-import uz.pdp.securitytest.entity.Product;
 import uz.pdp.securitytest.payload.CategoryDto;
-import uz.pdp.securitytest.payload.ProductDTO;
 import uz.pdp.securitytest.repository.AttachmentRepository;
 import uz.pdp.securitytest.repository.CategoryRepository;
-import uz.pdp.securitytest.repository.ProductRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 @MultipartConfig
 @RestController
 @RequestMapping("/category")
@@ -32,82 +26,74 @@ import java.util.stream.Collectors;
 public class CategoryController {
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
-    private final String imagePath = "C:\\Users\\User\\IdeaProjects\\home123456\\";
+    private final String imagePath = "C:\\Users\\User\\IdeaProjects\\home123456\\images\\";
 
     public CategoryController(CategoryRepository categoryRepository, AttachmentRepository attachmentRepository) {
         this.categoryRepository = categoryRepository;
         this.attachmentRepository = attachmentRepository;
     }
 
-//    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @GetMapping
-    public List<CategoryDto>read() {
-        ModelAndView modelAndView = new ModelAndView("category");
-        List<Category> categories = categoryRepository.findAll();
-        List<CategoryDto> categoriesDto = new ArrayList<>();
-        for (Category category : categories) {
-            String filePath = category.getAttachment().getId().toString();
-//            filePath=filePath.replaceAll(imagePath,"");
-//            filePath=filePath.replaceAll("images/","");
-            CategoryDto categoryDto = new CategoryDto(category.getId(), category.getName(), filePath);
-            categoriesDto.add(categoryDto);
+    public ResponseEntity<List<CategoryDto>> read() {
+        List<CategoryDto> categoriesDto = categoryRepository.findAll().stream().map(category -> {
+            String imageUrl = "http://localhost:8080/images/" + category.getAttachment().getFilePath();
+            CategoryDto categoryDto = new CategoryDto();
+            categoryDto.setName(category.getName());
+            categoryDto.setId(category.getId());
+            categoryDto.setAttachmentId(category.getAttachment().getId());
+            return categoryDto;
+        }).collect(Collectors.toList());
 
-        }
-
-        return categoriesDto;
+        return ResponseEntity.ok(categoriesDto);
     }
 
-//    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CREATE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+
     @PostMapping("/create")
-    public void create(@RequestParam("name") String name,
-                       @RequestParam("image") MultipartFile image) throws IOException {
+    public ResponseEntity<String> create(@RequestParam("name") String name,
+                                         @RequestParam("image") MultipartFile image) throws IOException {
         Category category = new Category();
         category.setName(name);
-        if (!image.isEmpty()) {
-            String contentType = image.getContentType();
-            String originalFilename = image.getOriginalFilename();
-            String filePath = imagePath + UUID.randomUUID() +
-                    ".png";
 
+        if (!image.isEmpty()) {
+            String fileName = UUID.randomUUID() + ".png";
+            String filePath = imagePath + fileName;
             Files.copy(image.getInputStream(), Path.of(filePath));
-            Attachment attachment = attachmentRepository.save(new Attachment(originalFilename, contentType, filePath, image.getSize()));
+            Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(),filePath, image.getSize()));
             category.setAttachment(attachment);
         }
 
         categoryRepository.save(category);
-     read();
+        return ResponseEntity.ok("Category created successfully!");
     }
 
-  //  @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
-    @PostMapping("/update")
-    public void edit(@RequestBody CategoryDto categoryDto,
-                       @RequestParam(required = false) MultipartFile image) throws IOException {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryDto.getId());
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> edit(@PathVariable Integer id,
+                                       @RequestParam("name") String name,
+                                       @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+        Optional<Category> optionalCategory = categoryRepository.findById(id);
         if (optionalCategory.isPresent()) {
             Category category = optionalCategory.get();
-            category.setName(categoryDto.getName());
-
+            category.setName(name);
 
             if (image != null && !image.isEmpty()) {
-                String contentType = image.getContentType();
-                String originalFilename = image.getOriginalFilename();
-                String filePath = imagePath + UUID.randomUUID() + "_" + originalFilename;
-
+                String fileName = UUID.randomUUID() + ".png";
+                String filePath = imagePath + fileName;
                 Files.copy(image.getInputStream(), Path.of(filePath));
-                Attachment attachment = attachmentRepository.save(new Attachment(originalFilename, contentType, filePath, image.getSize()));
+                Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
                 category.setAttachment(attachment);
             }
 
             categoryRepository.save(category);
+            return ResponseEntity.ok("Category updated successfully!");
         }
 
-        read();
+        return ResponseEntity.notFound().build();
     }
 
-   // @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).DELETE_CATEGORY.name(), T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
-    @GetMapping("/delete/{id}")
-    public void delete(@PathVariable Integer id) {
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> delete(@PathVariable Integer id) {
         categoryRepository.findById(id).ifPresent(categoryRepository::delete);
-        read();
+        return ResponseEntity.ok("Category deleted successfully!");
     }
 }

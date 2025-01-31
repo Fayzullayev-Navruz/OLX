@@ -10,6 +10,8 @@ public class CategoryDto {
     @NotBlank
     private String name;
 
+    private Integer attachmentId;
+
     private MultipartFile image;
 
     public MultipartFile getImage() {
@@ -46,5 +48,14 @@ public class CategoryDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    public Integer getAttachmentId() {
+        return attachmentId;
+    }
+
+    public void setAttachmentId(Integer attachmentId) {
+        this.attachmentId = attachmentId;
     }
 }
