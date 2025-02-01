@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @MultipartConfig
 @RestController
 @RequestMapping("/category")
-@CrossOrigin(origins = "http://localhost:63342") // Allow frontend origin to access backend resources
+@CrossOrigin(origins = "http://localhost:63342")
 public class CategoryController {
 
     private final CategoryRepository categoryRepository;
@@ -33,27 +33,22 @@ public class CategoryController {
         this.attachmentRepository = attachmentRepository;
     }
 
-    // Endpoint to handle image upload
     @PostMapping("/upload-image")
     public ResponseEntity<Attachment> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
         if (image.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        // Generate a unique file name for the uploaded image
         String fileName = UUID.randomUUID() + ".png";
         String filePath = imagePath + fileName;
 
-        // Save the image to the local directory
         Files.copy(image.getInputStream(), Path.of(filePath));
 
-        // Save image metadata to the database
         Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
 
-        return ResponseEntity.ok(attachment); // Return the saved attachment data
+        return ResponseEntity.ok(attachment);
     }
 
-    // Endpoint to get the list of categories
     @GetMapping
     public ResponseEntity<List<CategoryDto>> read() {
         List<CategoryDto> categoriesDto = categoryRepository.findAll().stream().map(category -> {
@@ -69,7 +64,6 @@ public class CategoryController {
         return ResponseEntity.ok(categoriesDto);
     }
 
-    // Endpoint to create a new category
     @PostMapping("/create")
     public ResponseEntity<CategoryDto> create(@RequestParam("name") String name,
                                               @RequestParam("image") MultipartFile image) throws IOException {
@@ -96,7 +90,6 @@ public class CategoryController {
         return ResponseEntity.ok(categoryDto);
     }
 
-    // Endpoint to update an existing category
     @PutMapping("/update/{id}")
     public ResponseEntity<CategoryDto> edit(@PathVariable Integer id,
                                             @RequestParam("name") String name,
@@ -129,7 +122,6 @@ public class CategoryController {
         return ResponseEntity.notFound().build();
     }
 
-    // Endpoint to delete a category
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable Integer id) {
         categoryRepository.findById(id).ifPresent(categoryRepository::delete);
