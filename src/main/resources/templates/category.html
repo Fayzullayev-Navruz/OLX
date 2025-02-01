@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,41 +20,52 @@
         .category-card {
             background: white;
             padding: 15px;
-            border-radius: 50%;
+            border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 150px;
-            height: 150px;
-            transition: transform 0.2s;
+            width: 180px;
+            height: 220px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            transition: transform 0.2s ease;
         }
         .category-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px); /* Add hover effect */
+        }
+        .category-image-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
         .category-card img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
         .category-name {
             font-weight: bold;
-            margin-top: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
         }
         .action-buttons {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             gap: 10px;
-            margin-top: 10px;
+            width: 100%;
         }
         .action-buttons button {
             border: none;
-            background: none;
-            font-size: 18px;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 5px 10px;
         }
         .create-category {
             margin-top: 20px;
@@ -78,15 +87,30 @@
             border-radius: 8px;
             cursor: pointer;
         }
+        .edit-category-form {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: 20px auto;
+        }
+        .edit-category-form input, .edit-category-form button {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+        .edit-category-form button {
+            background-color: #28a745;
+        }
     </style>
 </head>
 <body>
 
 <h1>📂 Category Management</h1>
 
-<div class="category-container" id="categoryContainer">
-    <!-- Categories will be dynamically added here -->
-</div>
+<div class="category-container" id="categoryContainer"></div>
 
 <div class="create-category">
     <h2>➕ Add a New Category</h2>
@@ -97,90 +121,135 @@
     </form>
 </div>
 
+<!-- Edit Category Form -->
+<div class="edit-category-form" id="editCategoryForm">
+    <h2>Edit Category</h2>
+    <form id="updateCategoryForm" enctype="multipart/form-data">
+        <input type="text" id="editCategoryName" name="name" placeholder="Enter new category name" required>
+        <input type="file" id="editCategoryImage" name="image" accept="image/png, image/jpeg">
+        <button type="submit">✅ Update Category</button>
+        <button type="button" onclick="cancelEdit()">❌ Cancel</button>
+    </form>
+</div>
+
 <script>
-    function loadCategories() {
-        fetch('http://localhost:8080/category')
-            .then(response => response.json())
-            .then(categories => {
-                const container = document.getElementById('categoryContainer');
-                container.innerHTML = '';
+    let currentEditingId = null;
 
-                categories.forEach(category => {
-                    const imageUrl = category.imageUrl || "http://localhost:8080/images/default-image.png"; // Updated path
+    // Function to load the categories
+    async function loadCategories() {
+        try {
+            let response = await fetch('http://localhost:8080/category');
+            let categories = await response.json();
+            const container = document.getElementById('categoryContainer');
+            container.innerHTML = '';
 
-                    const card = document.createElement('div');
-                    card.classList.add('category-card');
-                    card.innerHTML = `
-                       <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
-
-                        <div class="category-name">${category.name}</div>
-                        <div class="action-buttons">
-                            <button onclick="editCategory(${category.id}, '${category.name}', '${imageUrl}')">✏️</button>
-                            <button onclick="deleteCategory(${category.id})">🗑</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            })
-            .catch(error => console.error('Error loading categories:', error));
-    }
-
-    document.getElementById('createCategoryForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const formData = new FormData();
-        formData.append('name', document.getElementById('categoryName').value);
-        formData.append('image', document.getElementById('categoryImage').files[0]);
-
-        // Step 1: Upload the image
-        fetch('http://localhost:8080/upload-image', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(imageData => {
-                const imageId = imageData.id; // assuming the server responds with an image id
-
-                // Step 2: Create the category with the image id
-                const categoryData = new FormData();
-                categoryData.append('name', document.getElementById('categoryName').value);
-                categoryData.append('imageId', imageId);
-
-                fetch('http://localhost:8080/category/create', {
-                    method: 'POST',
-                    body: categoryData
-                })
-                    .then(() => {
-                        loadCategories();
-                        document.getElementById('createCategoryForm').reset();
-                    })
-                    .catch(error => console.error('Error creating category:', error));
-            })
-            .catch(error => console.error('Error uploading image:', error));
-    });
-
-    function editCategory(id, currentName, currentImage) {
-        const newName = prompt("Enter new category name:", currentName);
-        if (!newName) return;
-
-        const formData = new FormData();
-        formData.append('name', newName);
-
-        fetch(`http://localhost:8080/category/update/${id}`, {
-            method: 'PUT',
-            body: formData
-        })
-            .then(() => loadCategories())
-            .catch(error => console.error('Error updating category:', error));
-    }
-
-    function deleteCategory(id) {
-        if (confirm("Are you sure you want to delete this category?")) {
-            fetch(`http://localhost:8080/category/delete/${id}`, { method: 'DELETE' })
-                .then(() => loadCategories())
-                .catch(error => console.error('Error deleting category:', error));
+            categories.forEach(category => {
+                const card = document.createElement('div');
+                card.classList.add('category-card');
+                card.innerHTML = `
+                    <div class="category-image-container">
+                        <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
+                    </div>
+                    <div class="category-name">${category.name}</div>
+                    <div class="action-buttons">
+                        <button onclick="editCategory(${category.id}, '${category.name}', '${category.attachmentId}')">✏️ Edit</button>
+                        <button onclick="deleteCategory(${category.id})">🗑 Delete</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } catch (error) {
+            console.error('Error loading categories:', error);
         }
     }
 
+    // Function to handle the edit action
+    function editCategory(id, currentName, currentImageId) {
+        currentEditingId = id;
+        const form = document.getElementById('editCategoryForm');
+        const nameInput = document.getElementById('editCategoryName');
+        const imageInput = document.getElementById('editCategoryImage');
+
+        // Set the current name in the input field
+        nameInput.value = currentName;
+
+        // Show the edit form
+        form.style.display = 'block';
+    }
+
+    // Function to cancel editing
+    function cancelEdit() {
+        document.getElementById('editCategoryForm').style.display = 'none';
+    }
+
+    // Function to handle the update action
+    async function updateCategory(e) {
+        e.preventDefault();
+
+        const formData = new FormData(document.getElementById('updateCategoryForm'));
+
+        try {
+            if (currentEditingId !== null) {
+                await fetch(`http://localhost:8080/category/update/${currentEditingId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                loadCategories();
+                cancelEdit();  // Hide the form after submission
+            }
+        } catch (error) {
+            console.error('Error updating category:', error);
+        }
+    }
+
+    // Function to handle the delete action
+    async function deleteCategory(id) {
+        if (!confirm("Are you sure you want to delete this category?")) return;
+        try {
+            await fetch(`http://localhost:8080/category/delete/${id}`, { method: 'DELETE' });
+            loadCategories();
+        } catch (error) {
+            console.error('Error deleting category:', error);
+        }
+    }
+
+    // Event listener for updating the category
+    document.getElementById('updateCategoryForm').addEventListener('submit', updateCategory);
+
+    // Event listener for creating a category
+    document.getElementById('createCategoryForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        try {
+            // Upload the image first
+            let imageResponse = await fetch('http://localhost:8080/category/upload-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!imageResponse.ok) {
+                throw new Error('Failed to upload image');
+            }
+
+            let imageData = await imageResponse.json(); // Get the uploaded image data
+            formData.append('imageId', imageData.id);
+
+            // Now create the category
+            await fetch('http://localhost:8080/category/create', {
+                method: 'POST',
+                body: formData,
+            });
+
+            loadCategories();
+            this.reset();
+        } catch (error) {
+            console.error('Error creating category:', error);
+        }
+    });
+
+    // Load categories when the page loads
     window.onload = loadCategories;
 </script>
 

@@ -14,6 +14,8 @@ public class CategoryDto {
 
     private MultipartFile image;
 
+    private String ImageUrl;
+
     public MultipartFile getImage() {
         return image;
     }
@@ -32,6 +34,14 @@ public class CategoryDto {
     }
 
     public CategoryDto(Category category) {
+    }
+
+    public String getImageUrl() {
+        return ImageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        ImageUrl = imageUrl;
     }
 
     public Integer getId() {
