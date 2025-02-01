@@ -40,6 +40,7 @@
             border-radius: 50%;
             overflow: hidden;
             margin-bottom: 10px;
+            cursor: pointer; /* Make the image clickable */
         }
         .category-card img {
             width: 100%;
@@ -90,19 +91,42 @@
         .edit-category-form {
             display: none;
             background-color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 350px;
             margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+        .edit-category-form h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
         }
         .edit-category-form input, .edit-category-form button {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 15px;
+            padding: 12px;
             width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
         }
         .edit-category-form button {
             background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .edit-category-form button:hover {
+            background-color: #218838;
+        }
+        .cancel-button {
+            background-color: #dc3545;
+            margin-top: 10px;
+        }
+        .cancel-button:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
@@ -127,7 +151,7 @@
         <input type="text" id="editCategoryName" name="name" placeholder="Enter new category name" required>
         <input type="file" id="editCategoryImage" name="image" accept="image/png, image/jpeg">
         <button type="submit">✅ Update Category</button>
-        <button type="button" onclick="cancelEdit()">❌ Cancel</button>
+        <button type="button" class="cancel-button" onclick="cancelEdit()">❌ Cancel</button>
     </form>
 </div>
 
@@ -145,9 +169,11 @@
                 const card = document.createElement('div');
                 card.classList.add('category-card');
                 card.innerHTML = `
-                    <div class="category-image-container">
-                        <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
-                    </div>
+                    <a href="/product/${category.id}">
+                        <div class="category-image-container">
+                            <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
+                        </div>
+                    </a>
                     <div class="category-name">${category.name}</div>
                     <div class="action-buttons">
                         <button onclick="editCategory(${category.id}, '${category.name}', '${category.attachmentId}')">✏️ Edit</button>
@@ -222,7 +248,7 @@
                 throw new Error('Failed to upload image');
             }
 
-            let imageData = await imageResponse.json(); // Get the uploaded image data
+            let imageData = await imageResponse.json();
             formData.append('imageId', imageData.id);
 
             await fetch('http://localhost:8080/category/create', {
