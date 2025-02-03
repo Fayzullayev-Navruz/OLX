@@ -1,4 +1,3 @@
-
 package uz.pdp.securitytest.controller;
 
 import jakarta.servlet.annotation.MultipartConfig;
@@ -24,13 +23,30 @@ import java.util.stream.Collectors;
 @RequestMapping("/category")
 @CrossOrigin(origins = "http://localhost:63342")
 public class CategoryController {
+
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
-    private final String imagePath = "C:\\Users\\User\\IdeaProjects\\home123456\\images\\";
+    private final String imagePath = "C:/Users/MSI/IdeaProjects/OLX_updated/images/";
 
     public CategoryController(CategoryRepository categoryRepository, AttachmentRepository attachmentRepository) {
         this.categoryRepository = categoryRepository;
         this.attachmentRepository = attachmentRepository;
+    }
+
+    @PostMapping("/upload-image")
+    public ResponseEntity<Attachment> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
+        if (image.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        String fileName = UUID.randomUUID() + ".png";
+        String filePath = imagePath + fileName;
+
+        Files.copy(image.getInputStream(), Path.of(filePath));
+
+        Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
+
+        return ResponseEntity.ok(attachment);
     }
 
     @GetMapping
@@ -41,55 +57,70 @@ public class CategoryController {
             categoryDto.setName(category.getName());
             categoryDto.setId(category.getId());
             categoryDto.setAttachmentId(category.getAttachment().getId());
+            categoryDto.setImageUrl(imageUrl);
             return categoryDto;
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(categoriesDto);
     }
 
-
     @PostMapping("/create")
-    public ResponseEntity<String> create(@RequestParam("name") String name,
-                                         @RequestParam("image") MultipartFile image) throws IOException {
+    public ResponseEntity<CategoryDto> create(@RequestParam("name") String name,
+                                              @RequestParam("image") MultipartFile image) throws IOException {
         Category category = new Category();
         category.setName(name);
 
+        Attachment attachment = null;
         if (!image.isEmpty()) {
             String fileName = UUID.randomUUID() + ".png";
             String filePath = imagePath + fileName;
             Files.copy(image.getInputStream(), Path.of(filePath));
-            Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(),filePath, image.getSize()));
+            attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
             category.setAttachment(attachment);
         }
 
         categoryRepository.save(category);
-        return ResponseEntity.ok("Category created successfully!");
+
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setId(category.getId());
+        categoryDto.setName(category.getName());
+        categoryDto.setAttachmentId(attachment != null ? attachment.getId() : null);
+        categoryDto.setImageUrl(attachment != null ? "http://localhost:8080/images/" + attachment.getFilePath() : null);
+
+        return ResponseEntity.ok(categoryDto);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> edit(@PathVariable Integer id,
-                                       @RequestParam("name") String name,
-                                       @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+    public ResponseEntity<CategoryDto> edit(@PathVariable Integer id,
+                                            @RequestParam("name") String name,
+                                            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
         Optional<Category> optionalCategory = categoryRepository.findById(id);
         if (optionalCategory.isPresent()) {
             Category category = optionalCategory.get();
             category.setName(name);
 
+            Attachment attachment = null;
             if (image != null && !image.isEmpty()) {
                 String fileName = UUID.randomUUID() + ".png";
                 String filePath = imagePath + fileName;
                 Files.copy(image.getInputStream(), Path.of(filePath));
-                Attachment attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
+                attachment = attachmentRepository.save(new Attachment(fileName, image.getContentType(), filePath, image.getSize()));
                 category.setAttachment(attachment);
             }
 
             categoryRepository.save(category);
-            return ResponseEntity.ok("Category updated successfully!");
+
+            CategoryDto categoryDto = new CategoryDto();
+            categoryDto.setId(category.getId());
+            categoryDto.setName(category.getName());
+            categoryDto.setAttachmentId(attachment != null ? attachment.getId() : category.getAttachment().getId());
+            categoryDto.setImageUrl(attachment != null ? "http://localhost:8080/images/" + attachment.getFilePath() : "http://localhost:8080/images/" + category.getAttachment().getFilePath());
+
+            return ResponseEntity.ok(categoryDto);
         }
 
         return ResponseEntity.notFound().build();
     }
-
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable Integer id) {
