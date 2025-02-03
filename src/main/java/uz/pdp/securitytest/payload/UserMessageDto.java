@@ -5,11 +5,12 @@ package uz.pdp.securitytest.payload;
 public class UserMessageDto {
     private Integer Id;
     private String message;
-    private String senderName;
+    private SenderDto sender;
+
     private Integer productId;
 
-    public UserMessageDto(String sender, String message) {
-        this.senderName = sender;
+    public UserMessageDto(SenderDto sender, String message) {
+        this.sender = sender;
         this.message = message;
     }
 
@@ -32,15 +33,9 @@ public class UserMessageDto {
         Id = id;
     }
 
-    public String getSender() {
-        return senderName;
+    public SenderDto getSender() {
+        return sender;
     }
-
-    public void setSender(String sender) {
-        this.senderName = sender;
-    }
-
-
 
     public Integer getProductId() {
         return productId;
@@ -48,6 +43,10 @@ public class UserMessageDto {
 
     public void setProductId(Integer productId) {
         this.productId = productId;
+    }
+
+    public void setSender(SenderDto sender) {
+        this.sender = sender;
     }
 }
 

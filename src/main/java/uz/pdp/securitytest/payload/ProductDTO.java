@@ -1,7 +1,9 @@
 package uz.pdp.securitytest.payload;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.web.multipart.MultipartFile;
 import uz.pdp.securitytest.entity.Category;
+import uz.pdp.securitytest.entity.ChildCategory;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -16,9 +18,10 @@ public class ProductDTO {
     @NotBlank(message = "name not be null or blank")
     private String name;
     @Positive(message = "price should be positive")
-    private Long price;
+    private Double price;
 
-    private Category category;
+@JsonIgnore
+    private ChildCategory childCategory;
     @NotBlank(message = "imageUrl not be null")
     private String imageUrl;
     private String description;
@@ -54,20 +57,20 @@ public class ProductDTO {
         this.name = name;
     }
 
-    public Long getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(Long price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public Category getCategory() {
-        return category;
+    public ChildCategory getChildCategory() {
+        return childCategory;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setChildCategory(ChildCategory childCategory) {
+        this.childCategory = childCategory;
     }
 
     public String getImageUrl() {

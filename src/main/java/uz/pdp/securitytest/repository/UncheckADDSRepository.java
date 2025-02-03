@@ -7,8 +7,8 @@ import uz.pdp.securitytest.entity.UncheckADDS;
 import java.util.List;
 
 public interface UncheckADDSRepository extends JpaRepository<UncheckADDS, Integer> {
-
-    List<UncheckADDS> findByManagers_Id(Integer managersId);
+@Query("select c from UncheckADDS c where  c.product.is_check=false and c.managers.id=:managersId")
+    List<UncheckADDS> findByManagers_Ide(Integer managersId);
 
     @Query("select p from UncheckADDS  p where p.product.id=:productId")
     UncheckADDS findbyProductID(Integer productId);

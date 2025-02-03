@@ -1,8 +1,13 @@
 package uz.pdp.securitytest.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.lang.NonNull;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 
@@ -15,11 +20,20 @@ public class Category implements Parent {
     @NonNull
     private String name;
 
-    @OneToMany(mappedBy = "category")
-    private List<Product> products;
+    @OneToMany(mappedBy ="category" )
+    private List<ChildCategory>childCategories;
 
     @OneToOne
     private Attachment attachment;
+
+    @CreationTimestamp
+    private Timestamp createdAt;
+
+    @UpdateTimestamp
+    private Timestamp updatedAt;
+
+    @CreatedBy
+    private Integer createdBy;
 
 //    @ToString.Exclude
 //    @ManyToOne(fetch = FetchType.LAZY)
@@ -46,12 +60,12 @@ public class Category implements Parent {
         this.name = name;
     }
 
-    public List<Product> getProducts() {
-        return products;
+    public List<ChildCategory> getChildCategories() {
+        return childCategories;
     }
 
-    public void setProducts(List<Product> products) {
-        this.products = products;
+    public void setChildCategories(List<ChildCategory> childCategories) {
+        this.childCategories = childCategories;
     }
 
     public Attachment getAttachment() {

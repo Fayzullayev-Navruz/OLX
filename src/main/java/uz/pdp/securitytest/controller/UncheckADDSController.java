@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/uncheck")
+@CrossOrigin(origins = "http://localhost:63342")
 public class UncheckADDSController {
 
     private final UncheckADDSRepository uncheckADDSRepository;
@@ -35,9 +36,9 @@ public class UncheckADDSController {
     @GetMapping
     public List<ProductDTO> getOwnWork() {
         ArrayList<ProductDTO> productDTOS = new ArrayList<>();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
-        List<UncheckADDS> byManagersId = uncheckADDSRepository.findByManagers_Id(user.getId());
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        User user = (User) auth.getPrincipal();
+        List<UncheckADDS> byManagersId = uncheckADDSRepository.findByManagers_Ide(1);
 
         for (UncheckADDS uncheckADDS : byManagersId) {
             Product product = uncheckADDS.getProduct();
@@ -45,7 +46,7 @@ public class UncheckADDSController {
             productDTO.setId(product.getId());
             productDTO.setName(product.getName());
             productDTO.setPrice(product.getPrice());
-            productDTO.setCategory(product.getCategory());
+            productDTO.setChildCategory(product.getChildCategory());
             productDTO.setDescription(product.getDescription());
             productDTO.setIs_check(product.getIs_check());
             productDTOS.add(productDTO);
@@ -59,7 +60,7 @@ public class UncheckADDSController {
         Optional<Product> byId = productRepository.findById(productDTO.getId());
         if (byId.isPresent()) {
             Product product = byId.get();
-            product.setIs_check(product.getIs_check());
+            product.setIs_check(productDTO.getIs_check());
             productRepository.save(product);
             UncheckADDS uncheckADDS = uncheckADDSRepository.findbyProductID(product.getId());
             uncheckADDS.setDeleted(true);

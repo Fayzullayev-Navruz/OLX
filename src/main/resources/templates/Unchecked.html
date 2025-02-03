@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <style>
+        .container {
+            padding: 30px;
+        }
+
+        .product-container {
+            margin-top: 20px;
+        }
+
+        .product {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-details {
+            margin-bottom: 15px;
+        }
+
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .approve-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .back-button {
+            background-color: #ff6347;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .back-button:hover {
+            background-color: #f05030;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Manager Dashboard</h1>
+    <div class="product-container" id="productContainer"></div>
+
+    <button class="back-button" onclick="goBack()">Back</button>
+</div>
+
+<script>
+    // Fetch products assigned to the manager
+    // Fetch products assigned to the manager
+    function getUnapprovedProducts() {
+        fetch('http://localhost:8080/uncheck', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(products => {
+                console.log(products); // Log the response to check the structure
+
+                const productContainer = document.getElementById('productContainer');
+                productContainer.innerHTML = ''; // Clear previous content
+
+                if (!products || products.length === 0) {
+                    productContainer.innerHTML = '<p>No products available.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('product');
+
+                    // Product details
+                    const productDetails = document.createElement('div');
+                    productDetails.classList.add('product-details');
+                    productDetails.innerHTML = `
+                <strong>Product Name:</strong> ${product.name}<br>
+                <strong>Price:</strong> $${product.price}<br>
+                <strong>Category:</strong> ${product.childCategory ? product.childCategory.name : 'No Category'}<br>
+                <strong>Description:</strong> ${product.description}
+            `;
+                    productDiv.appendChild(productDetails);
+
+                    // Approve and Reject buttons
+                    const productActions = document.createElement('div');
+                    productActions.classList.add('product-actions');
+
+                    const approveButton = document.createElement('button');
+                    approveButton.classList.add('btn', 'approve-btn');
+                    approveButton.textContent = 'Approve';
+                    approveButton.onclick = function() {
+                        updateProductStatus(product.id, true);
+                    };
+
+                    const rejectButton = document.createElement('button');
+                    rejectButton.classList.add('btn', 'reject-btn');
+                    rejectButton.textContent = 'Reject';
+                    rejectButton.onclick = function() {
+                        updateProductStatus(product.id, false);
+                    };
+
+                    productActions.appendChild(approveButton);
+                    productActions.appendChild(rejectButton);
+                    productDiv.appendChild(productActions);
+
+                    productContainer.appendChild(productDiv);
+                });
+            })
+            .catch(error => alert('Failed to load products.'));
+    }
+
+
+    // Update the product status (approve or reject)
+    function updateProductStatus(productId, isApproved) {
+        console.log(isApproved)
+        fetch('http://localhost:8080/uncheck', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                id: productId,
+                is_check: isApproved
+            })
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert(isApproved ? 'Product approved successfully!' : 'Product rejected successfully!');
+                    getUnapprovedProducts(); // Reload the products
+                } else {
+                    alert('Failed to update product status.');
+                }
+            })
+            .catch(error => alert('Failed to update product status.'));
+    }
+
+    // Go back to the previous page
+    function goBack() {
+        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/userProfile.html';
+    }
+
+    // Load unapproved products on page load
+    getUnapprovedProducts();
+</script>
+
+</body>
+</html>

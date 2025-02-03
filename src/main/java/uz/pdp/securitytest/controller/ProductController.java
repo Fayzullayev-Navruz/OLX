@@ -24,28 +24,30 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
-@Validated
+@CrossOrigin(origins = "http://localhost:63342")
+
 public class ProductController {
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final ChildCategoryRepository childCategoryRepository;
     private final AttachmentRepository attachmentRepository;
     private final ManagerRepository managerRepository;
     private final UncheckADDSRepository uncheckADDSRepository;
     private final String path = "src/main/resources/static/images/";
 
-    public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository, AttachmentRepository attachmentRepository, ManagerRepository managerRepository, UncheckADDSRepository uncheckADDSRepository) {
+    public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository, ChildCategoryRepository childCategoryRepository, AttachmentRepository attachmentRepository, ManagerRepository managerRepository, UncheckADDSRepository uncheckADDSRepository) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+        this.childCategoryRepository = childCategoryRepository;
+
         this.attachmentRepository = attachmentRepository;
         this.managerRepository = managerRepository;
         this.uncheckADDSRepository = uncheckADDSRepository;
     }
 
     //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_PRODUCT.name())")
-    @GetMapping("/{categoryId}")
-    public List<ProductDTO> read(@PathVariable Integer categoryId) {
+    @GetMapping("/{childCategoryId}")
+    public List<ProductDTO> read(@PathVariable Integer childCategoryId) {
 
-        List<Product> matchingProducts = productRepository.findAll().stream().filter(product -> product.getCategory().getId().equals(categoryId)).collect(Collectors.toList());
+        List<Product> matchingProducts = productRepository.findAll().stream().filter(product -> product.getChildCategory().getId().equals(childCategoryId)).collect(Collectors.toList());
         List<ProductDTO> productDTOS = new ArrayList<>();
         matchingProducts.forEach(product -> {
             ProductDTO productDTO = new ProductDTO();
@@ -53,10 +55,9 @@ public class ProductController {
             productDTO.setName(product.getName());
             productDTO.setPrice(product.getPrice());
             String filePath = product.getAttachment().getFilePath();
-            filePath = filePath.replaceAll(path, "");
-            filePath = filePath.replaceAll("images/", "");
+            filePath = "http://localhost:8080/" + filePath;
             productDTO.setImageUrl(filePath);
-            productDTO.setCategory(product.getCategory());
+            productDTO.setChildCategory(product.getChildCategory());
             productDTOS.add(productDTO);
         });
 
@@ -67,28 +68,43 @@ public class ProductController {
     @PostMapping("/add/{categoryId}")
     public void create(
             @PathVariable Integer categoryId,
-            @RequestBody @Valid ProductDTO product1,
-            BindingResult bindingResult) throws IOException {
+            @RequestParam String name, @RequestParam String description, @RequestParam Double price, @RequestParam(required = false) MultipartFile image
+    ) throws IOException {
 
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("Category not found"));
-        Product product = new Product(product1.getName(), (long) Math.round(product1.getPrice()), category);
-        String path1 = path + UUID.randomUUID() + ".png";
-        Product save = productRepository.save(product);
+        ChildCategory childCategory = childCategoryRepository.findById(categoryId).get();
+
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+
+        if (image != null) {
+            String contentType = image.getContentType();
+            long size = image.getSize();
+            String originalFilename = image.getOriginalFilename();
+            String path1 = path + UUID.randomUUID() + originalFilename;
+            Attachment save1 = attachmentRepository.save(new Attachment(originalFilename, contentType, path1, size));
+            product.setAttachment(save1);
+
+        }
+        productRepository.save(product);
         Managers lazy = managerRepository.findLazy();
         UncheckADDS uncheckADDS = new UncheckADDS();
         uncheckADDS.setManagers(lazy);
         uncheckADDS.setProduct(product);
         uncheckADDSRepository.save(uncheckADDS);
-        read(product1.getId());
+
+        read(product.getId());
+
     }
 
 
     //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_PRODUCT.name())")
-    @PostMapping("update")
+    @PostMapping("/update")
     public void update(@RequestParam Integer id, @RequestParam String name, @RequestParam Double price, @RequestParam(required = false) MultipartFile image) {
         Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
         product.setName(name);
-        product.setPrice(Math.round(price));
+        product.setPrice(price);
 
         if (image != null) {
             String contentType = image.getContentType();
@@ -111,11 +127,29 @@ public class ProductController {
         Optional<Product> byId = productRepository.findById(id);
         Product product = byId.get();
         productRepository.delete(byId.get());
-        read(byId.get().getCategory().getId());
+        read(byId.get().getChildCategory().getId());
         redirectAttributes.addFlashAttribute("message", "Product deleted successfully!");
 
 
         read(product.getId());
 
+    }
+
+    @GetMapping("/myOwn")
+    public List<ProductDTO> readAll() {
+        List<Product> products = productRepository.findbyUserID(1);
+        List<ProductDTO> productDTOS = new ArrayList<>();
+        products.forEach(product -> {
+            ProductDTO productDTO = new ProductDTO();
+            productDTO.setId(product.getId());
+            productDTO.setName(product.getName());
+            productDTO.setPrice(product.getPrice());
+            productDTO.setDescription(product.getDescription());
+            String filePath = product.getAttachment().getFilePath();
+            productDTO.setImageUrl(filePath);
+            productDTO.setChildCategory(product.getChildCategory());
+            productDTOS.add(productDTO);
+        });
+        return productDTOS;
     }
 }
