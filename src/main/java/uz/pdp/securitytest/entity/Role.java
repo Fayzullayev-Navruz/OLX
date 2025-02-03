@@ -1,6 +1,9 @@
 package uz.pdp.securitytest.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.List;
 
@@ -8,8 +11,11 @@ import java.util.List;
  Created by: Mehrojbek
  DateTime: 17/01/25 21:48
  **/
+@AllArgsConstructor
+@Setter
+@Getter
 @Entity(name = "roles")
-public class Role {
+public class Role   {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,30 +32,6 @@ public class Role {
     }
 
     public Role() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<RolePermission> getRolePermissions() {
-        return rolePermissions;
-    }
-
-    public void setRolePermissions(List<RolePermission> rolePermissions) {
-        this.rolePermissions = rolePermissions;
     }
 
     @Override
