@@ -26,7 +26,7 @@ public class CategoryController {
 
     private final CategoryRepository categoryRepository;
     private final AttachmentRepository attachmentRepository;
-    private final String imagePath = "C:/Users/MSI/IdeaProjects/OLX_updated/images/";
+    private final String imagePath = "C:/Users/Hp/IdeaProjects/OLXpr2/images/";
 
     public CategoryController(CategoryRepository categoryRepository, AttachmentRepository attachmentRepository) {
         this.categoryRepository = categoryRepository;
