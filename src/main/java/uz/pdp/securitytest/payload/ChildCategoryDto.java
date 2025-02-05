@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 
@@ -12,15 +11,10 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CategoryDto {
+public class ChildCategoryDto {
     private Integer id;
     @NotBlank
     private String name;
 
-    private Integer attachmentId;
-
-    private MultipartFile image;
-
-    private String ImageUrl;
-
+    private Integer categoryId;
 }
