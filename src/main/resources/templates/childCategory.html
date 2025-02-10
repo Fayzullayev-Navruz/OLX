@@ -1,3 +1,264 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Manage Child Categories</title>-->
+<!--    <style>-->
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Arial', sans-serif;-->
+<!--            background-color: #eef5f9;-->
+<!--            color: #333;-->
+<!--            display: flex;-->
+<!--            justify-content: center;-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        .container {-->
+<!--            width: 100%;-->
+<!--            max-width: 960px;-->
+<!--            background-color: #fff;-->
+<!--            padding: 20px;-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);-->
+<!--        }-->
+
+<!--        h2, h3 {-->
+<!--            text-align: center;-->
+<!--            color: #007bff;-->
+<!--            margin-bottom: 20px;-->
+<!--        }-->
+
+<!--        form {-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--            gap: 15px;-->
+<!--            margin-bottom: 30px;-->
+<!--        }-->
+
+<!--        label {-->
+<!--            font-size: 14px;-->
+<!--            font-weight: bold;-->
+<!--            color: #555;-->
+<!--        }-->
+
+<!--        input[type="text"] {-->
+<!--            padding: 12px;-->
+<!--            border: 1px solid #ccc;-->
+<!--            border-radius: 8px;-->
+<!--            font-size: 16px;-->
+<!--            transition: border 0.3s;-->
+<!--        }-->
+
+<!--        input[type="text"]:focus {-->
+<!--            border: 1px solid #007bff;-->
+<!--        }-->
+
+<!--        button {-->
+<!--            padding: 10px 15px;-->
+<!--            font-size: 14px;-->
+<!--            color: white;-->
+<!--            background-color: #007bff;-->
+<!--            border: none;-->
+<!--            border-radius: 6px;-->
+<!--            cursor: pointer;-->
+<!--            transition: background-color 0.3s ease;-->
+<!--        }-->
+
+<!--        button:hover {-->
+<!--            background-color: #0056b3;-->
+<!--        }-->
+
+<!--        .actions {-->
+<!--            display: flex;-->
+<!--            gap: 10px;-->
+<!--            justify-content: center;-->
+<!--        }-->
+
+<!--        .child-category-container {-->
+<!--            display: flex;-->
+<!--            flex-wrap: wrap;-->
+<!--            gap: 20px;-->
+<!--            margin-top: 20px;-->
+<!--            justify-content: center;-->
+<!--        }-->
+
+<!--        .child-category-card {-->
+<!--            background-color: #fff;-->
+<!--            padding: 20px;-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);-->
+<!--            width: 220px;-->
+<!--            text-align: center;-->
+<!--            transition: transform 0.3s, box-shadow 0.3s;-->
+<!--        }-->
+
+<!--        .child-category-card:hover {-->
+<!--            transform: translateY(-10px);-->
+<!--            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);-->
+<!--        }-->
+
+<!--        .child-category-card h4 {-->
+<!--            margin-bottom: 15px;-->
+<!--            color: #007bff;-->
+<!--            font-size: 18px;-->
+<!--        }-->
+
+<!--        .child-category-card p {-->
+<!--            margin-bottom: 15px;-->
+<!--            color: #555;-->
+<!--        }-->
+
+<!--        .child-category-card .actions {-->
+<!--            display: flex;-->
+<!--            justify-content: space-between;-->
+<!--        }-->
+
+<!--        .action-btn {-->
+<!--            padding: 6px 12px;-->
+<!--            border: none;-->
+<!--            border-radius: 4px;-->
+<!--            cursor: pointer;-->
+<!--            transition: background-color 0.3s, transform 0.2s;-->
+<!--        }-->
+
+<!--        .edit-btn {-->
+<!--            background-color: #28a745;-->
+<!--            color: white;-->
+<!--        }-->
+
+<!--        .edit-btn:hover {-->
+<!--            background-color: #218838;-->
+<!--            transform: scale(1.05);-->
+<!--        }-->
+
+<!--        .delete-btn {-->
+<!--            background-color: #dc3545;-->
+<!--            color: white;-->
+<!--        }-->
+
+<!--        .delete-btn:hover {-->
+<!--            background-color: #c82333;-->
+<!--            transform: scale(1.05);-->
+<!--        }-->
+
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--<div class="container">-->
+<!--    <h2>Child Category Management</h2>-->
+
+<!--    <form id="childCategoryForm">-->
+<!--        <input type="hidden" id="childCategoryId">-->
+<!--        <input type="hidden" id="categoryId">-->
+
+<!--        <label for="name">Child Category Name:</label>-->
+<!--        <input type="text" id="name" placeholder="Enter child category name" required>-->
+
+<!--        <div class="actions">-->
+<!--            <button type="submit">Save</button>-->
+<!--            <button type="button" onclick="resetForm()">Cancel</button>-->
+<!--        </div>-->
+<!--    </form>-->
+
+<!--    <div class="child-category-container" id="categoryContainer"></div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--    async function getCategoryIdFromURL() {-->
+<!--        const urlParams = new URLSearchParams(window.location.search);-->
+<!--        return urlParams.get('categoryId');-->
+<!--    }-->
+
+<!--    const categoryContainer = document.getElementById('categoryContainer');-->
+
+<!--    function loadChildCategories(categoryId) {-->
+<!--        fetch(`http://localhost:8080/child_category/${categoryId}`)-->
+<!--            .then(response => response.json())-->
+<!--            .then(childCategories => {-->
+<!--                categoryContainer.innerHTML = '';-->
+<!--                childCategories.forEach(category => {-->
+<!--                    const card = document.createElement('div');-->
+<!--                    card.classList.add('child-category-card');-->
+<!--                    card.innerHTML = `-->
+<!--                        <h4>${category.name}</h4>-->
+<!--                        <p>Category ID: ${category.categoryId}</p>-->
+<!--                        <div class="actions">-->
+<!--                            <button class="action-btn edit-btn" onclick="editCategory(${category.id}, '${category.name}', ${category.categoryId})">Edit</button>-->
+<!--                            <button class="action-btn delete-btn" onclick="deleteCategory(${category.id})">Delete</button>-->
+<!--                        </div>-->
+<!--                    `;-->
+<!--                    categoryContainer.appendChild(card);-->
+<!--                });-->
+<!--            })-->
+<!--            .catch(error => console.error('Error:', error));-->
+<!--    }-->
+
+<!--    document.getElementById('childCategoryForm').addEventListener('submit', function(event) {-->
+<!--        event.preventDefault();-->
+<!--        const id = document.getElementById('childCategoryId').value;-->
+<!--        const name = document.getElementById('name').value;-->
+<!--        const categoryId = document.getElementById('categoryId').value;-->
+
+<!--        const formData = new FormData();-->
+<!--        formData.append('name', name);-->
+<!--        formData.append('parentId', categoryId);-->
+
+<!--        const url = id ? `http://localhost:8080/child_category/update/${id}` : 'http://localhost:8080/child_category/create';-->
+<!--        const method = id ? 'PUT' : 'POST';-->
+
+<!--        fetch(url, {-->
+<!--            method: method,-->
+<!--            body: formData-->
+<!--        })-->
+<!--            .then(() => {-->
+<!--                alert('Operation successful!');-->
+<!--                resetForm();-->
+<!--                loadChildCategories(categoryId);-->
+<!--            })-->
+<!--            .catch(error => console.error('Error:', error));-->
+<!--    });-->
+
+<!--    function editCategory(id, name, categoryId) {-->
+<!--        document.getElementById('childCategoryId').value = id;-->
+<!--        document.getElementById('name').value = name;-->
+<!--        document.getElementById('categoryId').value = categoryId;-->
+<!--    }-->
+
+<!--    function deleteCategory(id) {-->
+<!--        if (confirm('Are you sure you want to delete this category?')) {-->
+<!--            fetch(`http://localhost:8080/child_category/delete/${id}`, { method: 'DELETE' })-->
+<!--                .then(() => {-->
+<!--                    alert('Category deleted successfully!');-->
+<!--                    const categoryId = document.getElementById('categoryId').value;-->
+<!--                    loadChildCategories(categoryId);-->
+<!--                })-->
+<!--                .catch(error => console.error('Error:', error));-->
+<!--        }-->
+<!--    }-->
+
+<!--    function resetForm() {-->
+<!--        document.getElementById('childCategoryId').value = '';-->
+<!--        document.getElementById('name').value = '';-->
+<!--    }-->
+
+<!--    getCategoryIdFromURL().then(categoryId => {-->
+<!--        if (categoryId) {-->
+<!--            document.getElementById('categoryId').value = categoryId;-->
+<!--            loadChildCategories(categoryId);-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +290,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        h2, h3 {
+        h2 {
             text-align: center;
             color: #007bff;
             margin-bottom: 20px;
@@ -97,10 +358,11 @@
             width: 220px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
 
         .child-category-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -110,14 +372,10 @@
             font-size: 18px;
         }
 
-        .child-category-card p {
-            margin-bottom: 15px;
-            color: #555;
-        }
-
         .child-category-card .actions {
             display: flex;
             justify-content: space-between;
+            margin-top: 10px;
         }
 
         .action-btn {
@@ -189,12 +447,12 @@
                     card.classList.add('child-category-card');
                     card.innerHTML = `
                         <h4>${category.name}</h4>
-                        <p>Category ID: ${category.categoryId}</p>
                         <div class="actions">
                             <button class="action-btn edit-btn" onclick="editCategory(${category.id}, '${category.name}', ${category.categoryId})">Edit</button>
                             <button class="action-btn delete-btn" onclick="deleteCategory(${category.id})">Delete</button>
                         </div>
                     `;
+                    card.onclick = () => window.location.href = `products.html?childCategoryId=${category.id}`;
                     categoryContainer.appendChild(card);
                 });
             })
