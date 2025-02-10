@@ -20,7 +20,6 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 500
         );
-        System.out.println(e.getMessage());
 
 
         return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
