@@ -29,7 +29,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        h2, h3 {
+        h2 {
             text-align: center;
             color: #007bff;
             margin-bottom: 20px;
@@ -97,10 +97,11 @@
             width: 220px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
 
         .child-category-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -110,14 +111,10 @@
             font-size: 18px;
         }
 
-        .child-category-card p {
-            margin-bottom: 15px;
-            color: #555;
-        }
-
         .child-category-card .actions {
             display: flex;
             justify-content: space-between;
+            margin-top: 10px;
         }
 
         .action-btn {
@@ -189,12 +186,12 @@
                     card.classList.add('child-category-card');
                     card.innerHTML = `
                         <h4>${category.name}</h4>
-                        <p>Category ID: ${category.categoryId}</p>
                         <div class="actions">
                             <button class="action-btn edit-btn" onclick="editCategory(${category.id}, '${category.name}', ${category.categoryId})">Edit</button>
                             <button class="action-btn delete-btn" onclick="deleteCategory(${category.id})">Delete</button>
                         </div>
                     `;
+                    card.onclick = () => window.location.href = `products.html?childCategoryId=${category.id}`;
                     categoryContainer.appendChild(card);
                 });
             })
