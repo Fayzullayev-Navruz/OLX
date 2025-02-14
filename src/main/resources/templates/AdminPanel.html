@@ -3,174 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Roles</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Admin Role Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #success-message {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        #success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex">
-<!-- Sidebar -->
-<nav class="w-64 bg-blue-900 text-white h-screen p-4">
-    <h2 class="text-xl font-bold mb-4">Admin Panel</h2>
-    <ul>
-        <li class="mb-2 p-2 bg-blue-700 rounded"><a href="#">Dashboard</a></li>
-        <li class="mb-2 p-2 bg-blue-700 rounded"><a href="#">Roles</a></li>
-        <li class="mb-2 p-2 bg-blue-700 rounded"><a href="#">Users</a></li>
-    </ul>
-</nav>
+<body class="bg-gray-100 p-6">
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4">Admin Role Management</h1>
 
-<!-- Main Content -->
-<div class="flex-1 p-6">
-    <div class="max-w-4xl bg-white p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-4">Admin Panel - Roles</h1>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700" onclick="fetchRoles()">Load Roles</button>
+    <table class="w-full mt-4 border-collapse border border-gray-300">
+        <thead>
+        <tr class="bg-gray-200">
+            <th class="border px-4 py-2">Role Name</th>
+            <th class="border px-4 py-2">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="roles-list"></tbody>
+    </table>
 
-        <!-- Load Roles Button -->
-        <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700" onclick="fetchRoles()">Load Roles</button>
-
-        <div class="mt-4">
-            <h2 class="text-xl font-semibold mb-2">Role List</h2>
-            <table class="w-full border-collapse border border-gray-300">
-                <thead>
-                <tr class="bg-gray-200">
-                    <th class="border border-gray-300 px-4 py-2">Role Name</th>
-                    <th class="border border-gray-300 px-4 py-2">Actions</th>
-                </tr>
-                </thead>
-                <tbody id="roles-list"></tbody>
-            </table>
-        </div>
-
-        <div class="mt-4">
-            <h2 class="text-xl font-semibold mb-2">Add Role</h2>
-            <input type="text" id="role-name" class="border px-4 py-2 rounded w-full" placeholder="Role Name">
-            <div class="mt-2">
-                <h3 class="text-lg font-medium">Permissions</h3>
-                <div id="permissions-list" class="grid grid-cols-2 gap-2">
-                    <label><input type="checkbox" value="VIEW_PRODUCT"> VIEW_PRODUCT</label>
-                    <label><input type="checkbox" value="CREATE_PRODUCT"> CREATE_PRODUCT</label>
-                    <label><input type="checkbox" value="EDIT_PRODUCT"> EDIT_PRODUCT</label>
-                    <label><input type="checkbox" value="DELETE_PRODUCT"> DELETE_PRODUCT</label>
-                    <label><input type="checkbox" value="VIEW_CATEGORY"> VIEW_CATEGORY</label>
-                    <label><input type="checkbox" value="CREATE_CATEGORY"> CREATE_CATEGORY</label>
-                    <label><input type="checkbox" value="EDIT_CATEGORY"> EDIT_CATEGORY</label>
-                    <label><input type="checkbox" value="DELETE_CATEGORY"> DELETE_CATEGORY</label>
-                    <label><input type="checkbox" value="CRUD_ALL"> CRUD_ALL</label>
-                </div>
+    <div class="mt-4">
+        <h2 class="text-xl font-semibold">Add/Edit Role</h2>
+        <input type="text" id="role-name" class="border px-4 py-2 rounded w-full mt-2" placeholder="Enter Role Name">
+        <input type="hidden" id="role-id">
+        <div class="mt-2">
+            <h3 class="text-lg font-medium">Permissions</h3>
+            <div id="permissions-list" class="grid grid-cols-2 gap-2">
+                <label><input type="checkbox" value="VIEW_PRODUCT"> VIEW_PRODUCT</label>
+                <label><input type="checkbox" value="CREATE_PRODUCT"> CREATE_PRODUCT</label>
+                <label><input type="checkbox" value="EDIT_PRODUCT"> EDIT_PRODUCT</label>
+                <label><input type="checkbox" value="DELETE_PRODUCT"> DELETE_PRODUCT</label>
+                <label><input type="checkbox" value="VIEW_CATEGORY"> VIEW_CATEGORY</label>
+                <label><input type="checkbox" value="CREATE_CATEGORY"> CREATE_CATEGORY</label>
+                <label><input type="checkbox" value="EDIT_CATEGORY"> EDIT_CATEGORY</label>
+                <label><input type="checkbox" value="DELETE_CATEGORY"> DELETE_CATEGORY</label>
+                <label><input type="checkbox" value="CRUD_ALL"> CRUD_ALL</label>
             </div>
-            <button class="bg-green-500 text-white px-4 py-2 mt-2 rounded-md hover:bg-green-700" onclick="addRole()">Add</button>
-            <button class="bg-yellow-500 text-white px-4 py-2 mt-2 rounded-md hover:bg-yellow-700" onclick="updateRole()">Save Changes</button>
         </div>
+        <button class="bg-green-500 text-white px-4 py-2 mt-2 rounded-md hover:bg-green-700" onclick="addOrUpdateRole()">Save</button>
     </div>
+</div>
+
+<div id="success-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg text-sm hidden">
+    Successfully updated!
 </div>
 
 <script>
     const API_BASE_URL = "http://localhost:8080/admin/roles";
-    let editingRoleId = null;
 
-    // Fetch and display roles
-    async function fetchRoles() {
-        const response = await fetch(API_BASE_URL);
-        const roles = await response.json();
-        const rolesList = document.getElementById('roles-list');
-        rolesList.innerHTML = '';
-        roles.forEach(role => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class='border border-gray-300 px-4 py-2'>${role.name}</td>
-                <td class='border border-gray-300 px-4 py-2 text-center'>
-                    <button class='bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-700' onclick='editRole(${role.id}, "${role.name}", ${JSON.stringify(role.permissions)})'>Edit</button>
-                    <button class='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700' onclick='deleteRole(${role.id})'>Delete</button>
-                </td>
-            `;
-            rolesList.appendChild(tr);
-        });
-    }
-
-    // Add new role
-    async function addRole() {
-        const roleName = document.getElementById('role-name').value;
-        const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]:checked');
-
-        // Barcha permissionlarni oling, lekin "CRUD_ALL"ni chiqarib tashlang
-        const permissions = Array.from(permissionCheckboxes)
-            .map(checkbox => checkbox.value)
-            .filter(permission => permission !== 'CRUD_ALL');  // "CRUD_ALL" permissionini chiqarib tashlaydi
-
-        if (!roleName || permissions.length === 0) return alert('Enter a role name and select permissions');
-
-        await fetch(API_BASE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: roleName, permissions })
-        });
-
-        fetchRoles();  // Refresh the list of roles
-    }
-
-    // Edit existing role
-    async function editRole(id, roleName, permissions) {
-        editingRoleId = id;  // Set the role being edited
-        document.getElementById('role-name').value = roleName;  // Pre-fill the role name
-        const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]');
-
-        permissionCheckboxes.forEach(checkbox => {
-            checkbox.checked = permissions.includes(checkbox.value);  // Pre-check permissions
-        });
-    }
-
-    // Update existing role
-    async function updateRole() {
-        if (editingRoleId === null) return alert("No role selected for update!");
-
-        const roleName = document.getElementById('role-name').value;
-        const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]:checked');
-
-        // Barcha permissionlarni oling, lekin "CRUD_ALL"ni chiqarib tashlang
-        const permissions = Array.from(permissionCheckboxes)
-            .map(checkbox => checkbox.value)
-            .filter(permission => permission !== 'CRUD_ALL');  // "CRUD_ALL" permissionini chiqarib tashlaydi
-
-        if (!roleName || permissions.length === 0) return alert('Enter a role name and select permissions');
-
-        await fetch(`${API_BASE_URL}/${editingRoleId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: roleName, permissions })
-        });
-
-        fetchRoles();  // Refresh the list of roles
-        editingRoleId = null;  // Clear the editing state
-    }
-
-    // Delete role
-    async function deleteRole(id) {
-        await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
-        fetchRoles();  // Refresh the list of roles
-    }
-
-    // Handle "CRUD_ALL" checkbox functionality
-    document.addEventListener("DOMContentLoaded", function() {
-        const crudAllCheckbox = document.querySelector("input[value='CRUD_ALL']");
+    document.addEventListener("DOMContentLoaded", () => {
+        const crudAllCheckbox = document.querySelector('input[value="CRUD_ALL"]');
         const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]:not([value="CRUD_ALL"])');
 
-        // "CRUD_ALL" checkbox'ini belgilash
-        crudAllCheckbox.addEventListener('change', function() {
+        crudAllCheckbox.addEventListener("change", () => {
             permissionCheckboxes.forEach(checkbox => {
                 checkbox.checked = crudAllCheckbox.checked;
             });
         });
 
-        // Permissionlar o'zgarganda, "CRUD_ALL" checkbox'ini yangilash
         permissionCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (Array.from(permissionCheckboxes).every(checkbox => checkbox.checked)) {
-                    crudAllCheckbox.checked = true;
-                } else {
-                    crudAllCheckbox.checked = false;
-                }
+            checkbox.addEventListener("change", () => {
+                crudAllCheckbox.checked = [...permissionCheckboxes].every(cb => cb.checked);
             });
         });
     });
-</script>
 
+    async function fetchRoles() {
+        const response = await fetch(API_BASE_URL);
+        const roles = await response.json();
+        const rolesList = document.getElementById('roles-list');
+        rolesList.innerHTML = roles.map(role => `
+                <tr>
+                    <td class='border px-4 py-2'>${role.name}</td>
+                    <td class='border px-4 py-2 text-center'>
+                        <button class='bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-700' onclick='editRole(${JSON.stringify(role)})'>Edit</button>
+                        <button class='bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700' onclick='deleteRole(${role.id})'>Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    async function addOrUpdateRole() {
+        const roleId = document.getElementById('role-id').value;
+        const roleName = document.getElementById('role-name').value;
+        const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]:checked');
+        let permissions = Array.from(permissionCheckboxes).map(checkbox => checkbox.value);
+
+        if (!roleName || permissions.length === 0) return alert('Enter a role name and select permissions');
+
+        permissions = permissions.filter(permission => permission !== "CRUD_ALL");
+
+        const method = roleId ? 'PUT' : 'POST';
+        const url = roleId ? `${API_BASE_URL}/${roleId}` : API_BASE_URL;
+
+        await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: roleName, permissions })
+        });
+        showSuccessMessage();
+        fetchRoles();
+        resetForm();
+    }
+
+    function editRole(role) {
+        document.getElementById('role-id').value = role.id;
+        document.getElementById('role-name').value = role.name;
+        const permissionCheckboxes = document.querySelectorAll('#permissions-list input[type="checkbox"]');
+
+        permissionCheckboxes.forEach(checkbox => {
+            checkbox.checked = role.permissions.includes(checkbox.value);
+        });
+        document.querySelector('input[value="CRUD_ALL"]').checked = permissionCheckboxes.length > 0 && [...permissionCheckboxes].every(cb => cb.checked);
+    }
+
+    async function deleteRole(id) {
+        await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
+        showSuccessMessage();
+        fetchRoles();
+    }
+
+    function showSuccessMessage() {
+        const message = document.getElementById('success-message');
+        message.classList.remove('hidden');
+        message.classList.add('show');
+        setTimeout(() => message.classList.add('hidden'), 2000);
+    }
+
+    function resetForm() {
+        document.getElementById('role-id').value = '';
+        document.getElementById('role-name').value = '';
+        document.querySelectorAll('#permissions-list input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+    }
+</script>
 </body>
 </html>
