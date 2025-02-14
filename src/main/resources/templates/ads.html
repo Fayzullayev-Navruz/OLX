@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaxsiy Kabinet</title>
+    <style>
+        /* Basic Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #9face6);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 1000px;
+        }
+
+        .left-section {
+            width: 40%;
+            text-align: center;
+        }
+
+        .right-section {
+            width: 60%;
+            padding-left: 30px;
+        }
+
+        .profile-image {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"], input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #74ebd5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #66c2a0;
+        }
+
+        .btn-group button {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-container, .ads-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .message-container div, .ads-container div {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            width: 80%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button {
+            margin-top: 20px;
+            background-color: #ff6347;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background-color: #f05030;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Main Personal Cabinet -->
+<div class="container">
+    <!-- Left Section - User Info -->
+    <div class="left-section">
+        <img id="profileImage" class="profile-image" src="default-profile.jpg" alt="User Image">
+        <h1 id="username">Username</h1>
+        <div class="form-group">
+            <label for="usernameField">Username</label>
+            <input type="text" id="usernameField" disabled>
+        </div>
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" disabled>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" disabled>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" disabled>
+        </div>
+    </div>
+
+    <!-- Right Section - Action Buttons -->
+    <div class="right-section">
+        <div class="btn-group">
+            <button onclick="enableEdit()">Edit Info</button> <!-- Only Edit Info remains -->
+            <button onclick="deleteUser()">Delete Account</button>
+            <button onclick="viewMessages()">View Messages</button>
+            <button onclick="viewAds()">View Ads</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // API URL
+    const apiUrl = "http://localhost:8080/userData";
+
+    let userId = null; // Variable to hold the user ID
+
+    // Fetch and display user data
+    function getUserData() {
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include' // Include cookies for authentication
+        })
+            .then(response => response.json())
+            .then(data => {
+                userId = data.id; // Set the userId variable to the user's ID
+
+                document.getElementById('profileImage').src = data.profileImage || 'default-profile.jpg';
+                document.getElementById('username').textContent = data.username;
+                document.getElementById('usernameField').value = data.username;
+                document.getElementById('fullName').value = data.fullName;
+                document.getElementById('phone').value = data.phone;
+                document.getElementById('password').value = ''; // Ensure password field is empty for security
+            })
+            .catch(error => alert('Failed to load user data.'));
+    }
+
+    // Enable editing of the user info fields
+    function enableEdit() {
+        document.getElementById('usernameField').disabled = false;
+        document.getElementById('fullName').disabled = false;
+        document.getElementById('phone').disabled = false;
+        document.getElementById('password').disabled = false;
+
+        // Change the button to Update Info once the user starts editing
+        const editButton = document.querySelector('button[onclick="enableEdit()"]');
+        editButton.textContent = "Update Info"; // Change the text to "Update Info"
+        editButton.setAttribute("onclick", "updateUser()"); // Update the function to "updateUser"
+    }
+
+    // Update user info
+    function updateUser() {
+        const updatedData = {
+            id: userId,
+            username: document.getElementById('usernameField').value,
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            password: document.getElementById('password').value || null // Only update password if it's not empty
+        };
+
+        fetch(apiUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('User info updated successfully');
+                    getUserData(); // Reload user data
+                } else {
+                    alert('Failed to update user info.');
+                }
+            })
+            .catch(error => alert('Failed to update user info.'));
+    }
+
+    // Delete user account
+    function deleteUser() {
+        if (confirm("Are you sure you want to delete your account?")) {
+            fetch(`${apiUrl}/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Account deleted successfully');
+                        window.location.href = '/login.html'; // Redirect to login page
+                    } else {
+                        alert('Failed to delete account.');
+                    }
+                })
+                .catch(error => alert('Failed to delete account.'));
+        }
+    }
+
+    // View Messages
+    function viewMessages() {
+        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/messages.html';
+    }
+
+    // View Ads
+    function viewAds() {
+        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/ads.html';
+    }
+
+    // Load user data when the page loads
+    getUserData();
+</script>
+
+</body>
+</html>

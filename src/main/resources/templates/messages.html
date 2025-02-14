@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <style>
+        /* Same styles as before (You can reuse the styles from the previous page) */
+        .container {
+            padding: 30px;
+        }
+
+        .message-container {
+            margin-top: 20px;
+        }
+
+        .back-button {
+            background-color: #ff6347;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .back-button:hover {
+            background-color: #f05030;
+        }
+
+        .message {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .sender-info {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .message-content {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Your Messages</h1>
+
+    <div class="message-container" id="messageContainer"></div>
+
+    <button class="back-button" onclick="goBack()">Back</button>
+</div>
+
+<script>
+    // Fetch messages from the API
+    function getMessages() {
+        fetch('http://localhost:8080/message/chats', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(messages => {
+                const messageContainer = document.getElementById('messageContainer');
+                messages.forEach(sender => {
+                    const senderDiv = document.createElement('div');
+                    senderDiv.classList.add('message');
+                    senderDiv.classList.add('sender-info');
+                    senderDiv.textContent = sender;
+                    console.log(sender)
+
+                    // Add event listener for clicking on the sender
+                    senderDiv.onclick = function() {
+                        window.location.href = `chat.html?userName=${sender}`;
+                    }
+
+                    messageContainer.appendChild(senderDiv);
+                });
+            })
+            .catch(error => alert('Failed to load messages.'));
+    }
+
+    function goBack() {
+        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/personal_cabinet.html';
+    }
+
+    // Load messages on page load
+    getMessages();
+</script>
+
+</body>
+</html>

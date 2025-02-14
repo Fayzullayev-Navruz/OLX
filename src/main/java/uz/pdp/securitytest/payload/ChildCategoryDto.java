@@ -1,22 +1,20 @@
-package uz.pdp.securitytest.entity;
+package uz.pdp.securitytest.payload;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@Entity
-public class ChildCategory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ChildCategoryDto {
     private Integer id;
+    @NotBlank
     private String name;
 
-    @ManyToOne
-    private Category category;
+    private Integer categoryId;
 }

@@ -136,6 +136,7 @@
 
 <div class="category-container" id="categoryContainer"></div>
 
+
 <div class="create-category">
     <h2>➕ Add a New Category</h2>
     <form id="createCategoryForm" enctype="multipart/form-data">
@@ -169,7 +170,7 @@
                 const card = document.createElement('div');
                 card.classList.add('category-card');
                 card.innerHTML = `
-                    <a href="/product/${category.id}">
+                        <a href="childCategory.html?categoryId=${category.id}">
                         <div class="category-image-container">
                             <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
                         </div>
@@ -238,6 +239,7 @@
         e.preventDefault();
         const formData = new FormData(this);
 
+
         try {
             let imageResponse = await fetch('http://localhost:8080/category/upload-image', {
                 method: 'POST',
@@ -265,6 +267,7 @@
 
     window.onload = loadCategories;
 </script>
+
 
 </body>
 </html>

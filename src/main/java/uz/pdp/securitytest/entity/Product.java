@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
 @Entity
-public class Product implements Parent{
+public class Product implements Parent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,16 +15,16 @@ public class Product implements Parent{
     @NotBlank
     private String name;
     @Positive
-    private Long price;
+    private Double price;
 
     private String description;
 
-    private Boolean isActive=false;
+    private Boolean isActive = false;
 
-    private Boolean is_check=false;
+    private Boolean is_check = false;
 
-    @ManyToOne
-    private Category category;
+    @ManyToOne()
+    private ChildCategory childCategory;
     @OneToOne
     private Attachment attachment;
 
@@ -32,17 +32,18 @@ public class Product implements Parent{
     private User user;
 
 
-
-    public Product(String name, Long price, Category category) {
+    public Product(String name, Double price, ChildCategory childCategory, Attachment attachment, User user) {
         this.name = name;
         this.price = price;
-        this.category = category;
+        this.childCategory = childCategory;
+        this.attachment = attachment;
+        this.user = user;
     }
 
-    public Product(String name, Long price, Category category, Attachment attachment) {
+    public Product(String name, Double price, ChildCategory childCategory, Attachment attachment) {
         this.name = name;
         this.price = price;
-        this.category = category;
+        this.childCategory = childCategory;
         this.attachment = attachment;
     }
 
@@ -65,20 +66,12 @@ public class Product implements Parent{
         this.name = name;
     }
 
-    public Long getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(Long price) {
+    public void setPrice(Double price) {
         this.price = price;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
     }
 
     public Attachment getAttachment() {
@@ -121,13 +114,21 @@ public class Product implements Parent{
         this.is_check = is_check;
     }
 
+    public ChildCategory getChildCategory() {
+        return childCategory;
+    }
+
+    public void setChildCategory(ChildCategory childCategory) {
+        this.childCategory = childCategory;
+    }
+
     @Override
     public String toString() {
         return "Product{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", price=" + price +
-                ", category=" + category +
+
                 '}';
     }
 }

@@ -11,6 +11,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/userData")
+@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
+
 public class UserController {
     private final UserRepository userRepository;
 
@@ -21,9 +23,9 @@ public class UserController {
     @GetMapping
     public UserDto getUserData() {
         UserDto userDto = new UserDto();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
-        Optional<User> byId = userRepository.findById(user.getId());
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        User user = (User) auth.getPrincipal();
+        Optional<User> byId = userRepository.findById(1);
 
         userDto.setId(byId.get().getId());
         userDto.setUsername(byId.get().getUsername());
@@ -61,5 +63,4 @@ public class UserController {
         userRepository.delete(user);
         return userDto;
     }
-
 }

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            padding: 30px;
+            background-color: #fff;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sender-info {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .message-content {
+            margin-top: 5px;
+        }
+
+        .input-container {
+            display: flex;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .input-container button {
+            padding: 12px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            background-color: #ff6347;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            display: block;
+            width: 100%;
+        }
+
+        .back-button:hover {
+            background-color: #f05030;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Chat</h1>
+    <div class="chat-container" id="chatContainer"></div>
+
+    <!-- Message Input Section -->
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <button class="back-button" onclick="goBack()">Back</button>
+</div>
+
+<script>
+    // Get the sender from the URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const sender = urlParams.get('userName');
+    let senderId=null;
+    let productId=null;
+
+    if (!sender) {
+        alert('No sender found. Redirecting back...');
+        window.location.href = 'messages.html';  // Redirect to the messages page
+    } else {
+        console.log(sender + 'kk');  // Debugging the sender value
+    }
+
+    // Fetch chat messages
+    function getChatMessages() {
+        fetch(`http://localhost:8080/message/${sender}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(messages => {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML = ''; // Clear chat before rendering
+                messages.forEach(msg => {
+                    console.log(msg);
+                    senderId=msg.sender.id;
+                    productId=msg.productId;
+                    console.log(senderId);
+                    console.log(productId);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message');
+
+                    // Correctly access the sender username
+                    const senderDiv = document.createElement('div');
+                    senderDiv.classList.add('sender-info');
+                    senderDiv.textContent = msg.sender.username;
+
+                    // Correctly access the message content
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('message-content');
+                    contentDiv.textContent = msg.message;
+
+                    // Append the sender and message content to the messageDiv
+                    messageDiv.appendChild(senderDiv);
+                    messageDiv.appendChild(contentDiv);
+                    chatContainer.appendChild(messageDiv);
+                });
+            })
+            .catch(error => alert('Failed to load chat messages.'));
+    }
+
+    // Send a message
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const messageContent = messageInput.value.trim();
+
+        if (messageContent === '') {
+            alert('Please enter a message');
+            return;
+        }
+
+        const messageDto = {
+            message: messageContent,
+            productId: productId, // Send the product ID
+            senderId: senderId // Send the sender ID (username or other identifier)
+        };
+
+        fetch(`http://localhost:8080/message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(messageDto)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Message sent successfully!');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+                messageInput.value = '';  // Clear the input field
+                getChatMessages();  // Reload the messages
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send message.');
+            });
+    }
+
+
+    // Navigate back to the previous page
+    function goBack() {
+        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/messages.html';
+    }
+
+    // Load chat messages on page load
+    getChatMessages();
+</script>
+
+</body>
+</html>
