@@ -8,7 +8,7 @@ import uz.pdp.securitytest.service.RoleService;
 import java.util.List;
 
 @RestController
-@RequestMapping("admin/roles")
+@RequestMapping("/admin/roles")
 @RequiredArgsConstructor
 public class AdminRoleController {
 

@@ -13,6 +13,22 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer2() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:63342") // Frontend URL
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedHeaders("*");
+            }
+        };
+    }
+
+
     @Bean
     public CorsConfigurationSource corsConfigurer() {
         CorsConfiguration configuration = new CorsConfiguration();

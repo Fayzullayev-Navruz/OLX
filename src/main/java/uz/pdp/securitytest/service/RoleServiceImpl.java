@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.pdp.securitytest.entity.Role;
 import uz.pdp.securitytest.entity.RolePermission;
+import uz.pdp.securitytest.entity.User;
 import uz.pdp.securitytest.enums.PermissionEnum;
 import uz.pdp.securitytest.exception.RestException;
 import uz.pdp.securitytest.mapper.RoleMapper;
 import uz.pdp.securitytest.payload.RoleDTO;
 import uz.pdp.securitytest.repository.RolePermissionRepository;
 import uz.pdp.securitytest.repository.RoleRepository;
+import uz.pdp.securitytest.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Optional;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
     private final RoleMapper roleMapper;
     private final RolePermissionRepository rolePermissionRepository;
 
@@ -115,17 +118,16 @@ public class RoleServiceImpl implements RoleService {
 
         Role role = roleRepository.findById(id).orElseThrow(() -> RestException.notFound("Not found ", id));
 
+
+
         System.out.println(role);
 
-//        rolePermissionRepository.deleteByRoleId(role.getId());
-//
-//        List<PermissionEnum> permissions = roleDTO.getPermissions();
-//
-//        for (PermissionEnum permission : permissions) {
-//            RolePermission rolePermission = new RolePermission(permission);
-//            rolePermission.setRole(role);
-//            rolePermissionRepository.save(rolePermission);
-//        }
+
+        delete(id);
+
+        create(roleDTO);
+
+
 
 
         return roleDTO;
@@ -136,18 +138,20 @@ public class RoleServiceImpl implements RoleService {
 
         Role role = roleRepository.findById(id).orElseThrow(() -> RestException.notFound("Not found ", id));
 
+
+
+
         RoleDTO roleDTO = roleMapper.toRoleDTO(role);
 
 
-//        List<RolePermission> rolePermissions = role.getRolePermissions();
-//        List<PermissionEnum> permissions = roleDTO.getPermissions();
-//        for (RolePermission rolePermission : rolePermissions) {
-//            PermissionEnum permission = rolePermission.getPermission();
-//            permissions.add(permission);
-//        }
-//        roleDTO.setPermissions(permissions);
-
         rolePermissionRepository.deleteAll(role.getRolePermissions());
+
+        List<User> allByRole = userRepository.findAllByRole(role);
+        for (User user : allByRole) {
+            user.setRole(null);
+            userRepository.save(user);
+        }
+
 
         roleRepository.delete(role);
 
