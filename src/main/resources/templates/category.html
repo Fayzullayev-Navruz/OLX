@@ -9,6 +9,11 @@
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f9f9f9;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-mode {
+            background-color: #333;
+            color: #fff;
         }
         .category-container {
             display: flex;
@@ -30,6 +35,10 @@
             align-items: center;
             justify-content: space-between;
             transition: transform 0.2s ease;
+        }
+        .dark-mode .category-card {
+            background: #555;
+            color: #fff;
         }
         .category-card:hover {
             transform: translateY(-5px); /* Add hover effect */
@@ -53,6 +62,9 @@
             margin-bottom: 15px;
             color: #333;
         }
+        .dark-mode .category-name {
+            color: #fff;
+        }
         .action-buttons {
             display: flex;
             justify-content: space-between;
@@ -75,18 +87,39 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: inline-block;
+            transition: background-color 0.3s, color 0.3s;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        .dark-mode .create-category {
+            background: #444;
+            color: #fff;
         }
         .create-category input, .create-category button {
             margin-top: 10px;
-            padding: 10px;
+            padding: 12px;
             width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box; /* Prevent overflow */
+        }
+        .create-category input {
+            background-color: #fff; /* Oq rang */
+            color: #333; /* Qora rang matn uchun */
+            border: 1px solid #ccc;
+        }
+        .create-category input::placeholder {
+            color: #888; /* Placeholder uchun rang */
         }
         .create-category button {
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 8px;
             cursor: pointer;
+        }
+        .create-category button:hover {
+            background-color: #0056b3;
         }
         .edit-category-form {
             display: none;
@@ -128,19 +161,70 @@
         .cancel-button:hover {
             background-color: #c82333;
         }
+        /* Theme Switcher */
+        .switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #333;
+            border-radius: 30px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch-label {
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .switch input:checked + .switch-label {
+            color: #00bfff;
+        }
+
+        .switch input:checked + .switch-label:before {
+            content: '\f186'; /* Font Awesome moon icon for dark mode */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+        }
+
+        .switch input:not(:checked) + .switch-label:before {
+            content: '\f185'; /* Font Awesome sun icon for light mode */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+        }
+
+        /* Ensure label is always white */
+        label {
+            color: white !important;
+        }
     </style>
+    <!-- Add Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body id="body">
+
+<!-- Theme Switcher -->
+<div class="switch">
+    <input type="checkbox" id="themeSwitcher">
+    <label for="themeSwitcher" class="switch-label"></label>
+</div>
 
 <h1>📂 Category Management</h1>
 
 <div class="category-container" id="categoryContainer"></div>
 
-
 <div class="create-category">
     <h2>➕ Add a New Category</h2>
     <form id="createCategoryForm" enctype="multipart/form-data">
+        <label for="categoryName">Category Name</label>
         <input type="text" id="categoryName" name="name" placeholder="Enter category name" required>
+        <label for="categoryImage">Category Image</label>
         <input type="file" id="categoryImage" name="image" accept="image/png, image/jpeg" required>
         <button type="submit">✅ Create Category</button>
     </form>
@@ -149,7 +233,9 @@
 <div class="edit-category-form" id="editCategoryForm">
     <h2>Edit Category</h2>
     <form id="updateCategoryForm" enctype="multipart/form-data">
+        <label for="editCategoryName">New Category Name</label>
         <input type="text" id="editCategoryName" name="name" placeholder="Enter new category name" required>
+        <label for="editCategoryImage">New Category Image</label>
         <input type="file" id="editCategoryImage" name="image" accept="image/png, image/jpeg">
         <button type="submit">✅ Update Category</button>
         <button type="button" class="cancel-button" onclick="cancelEdit()">❌ Cancel</button>
@@ -157,6 +243,30 @@
 </div>
 
 <script>
+    // Get the body element and theme switcher
+    const body = document.getElementById('body');
+    const themeSwitcher = document.getElementById('themeSwitcher');
+
+    // Load the preferred theme from localStorage (if set)
+    if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-mode');
+        themeSwitcher.checked = true;
+    } else {
+        body.classList.remove('dark-mode');
+        themeSwitcher.checked = false;
+    }
+
+    // Toggle theme function
+    themeSwitcher.addEventListener('change', () => {
+        if (themeSwitcher.checked) {
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+
     let currentEditingId = null;
 
     async function loadCategories() {
@@ -170,7 +280,7 @@
                 const card = document.createElement('div');
                 card.classList.add('category-card');
                 card.innerHTML = `
-                        <a href="childCategory.html?categoryId=${category.id}">
+                    <a href="childCategory.html?categoryId=${category.id}">
                         <div class="category-image-container">
                             <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">
                         </div>
@@ -239,7 +349,6 @@
         e.preventDefault();
         const formData = new FormData(this);
 
-
         try {
             let imageResponse = await fetch('http://localhost:8080/category/upload-image', {
                 method: 'POST',
@@ -267,7 +376,6 @@
 
     window.onload = loadCategories;
 </script>
-
 
 </body>
 </html>
