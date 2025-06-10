@@ -58,11 +58,20 @@
 </div>
 
 <script>
+    const token = localStorage.getItem('authToken'); // Retrieve the token from localStorage
+    if (!token) {
+        alert("You are not logged in.");
+        window.location.href = '/login.html'; // Redirect to login page if no token
+    }
+
     // Fetch messages from the API
     function getMessages() {
         fetch('http://localhost:8080/message/chats', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`, // Include the token in the request
+                'Content-Type': 'application/json'
+            },
             credentials: 'same-origin'
         })
             .then(response => response.json())
@@ -73,12 +82,12 @@
                     senderDiv.classList.add('message');
                     senderDiv.classList.add('sender-info');
                     senderDiv.textContent = sender;
-                    console.log(sender)
+                    console.log(sender);
 
                     // Add event listener for clicking on the sender
                     senderDiv.onclick = function() {
                         window.location.href = `chat.html?userName=${sender}`;
-                    }
+                    };
 
                     messageContainer.appendChild(senderDiv);
                 });
@@ -86,6 +95,7 @@
             .catch(error => alert('Failed to load messages.'));
     }
 
+    // Go back to the previous page
     function goBack() {
         window.location.href = 'http://localhost:63342/OLXk/security-test/templates/personal_cabinet.html';
     }

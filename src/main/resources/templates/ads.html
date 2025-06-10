@@ -3,260 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaxsiy Kabinet</title>
+    <title>Product Management - CRUD</title>
     <style>
-        /* Basic Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #74ebd5, #9face6);
-            height: 100vh;
+        * {
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container {
-            display: flex;
-            flex-direction: row;
-            background-color: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 1000px;
-        }
-
-        .left-section {
-            width: 40%;
-            text-align: center;
-        }
-
-        .right-section {
-            width: 60%;
-            padding-left: 30px;
-        }
-
-        .profile-image {
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            margin-bottom: 20px;
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            color: #333;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 2rem;
-            color: #333;
+            text-align: center;
+            color: #4e73df;
+            margin-bottom: 20px;
         }
 
-        .form-group {
+        h2 {
+            color: #4e73df;
             margin-bottom: 15px;
         }
 
-        label {
-            display: block;
-            font-weight: bold;
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
-        input[type="text"], input[type="password"], input[type="tel"] {
+        .form-container input,
+        .form-container select,
+        .form-container button {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            font-size: 16px;
         }
 
-        button {
-            background-color: #74ebd5;
+        .form-container button {
+            background-color: #4e73df;
             color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            margin-top: 10px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #66c2a0;
+        .form-container button:hover {
+            background-color: #2e59d9;
         }
 
-        .btn-group button {
-            margin-top: 20px;
+        /* Product List */
+        .product-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+
+        .product-card img {
             width: 100%;
+            height: auto;
+            border-radius: 5px;
         }
 
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message-container, .ads-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .message-container div, .ads-container div {
+        .product-card h3 {
+            font-size: 18px;
             margin: 10px 0;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            width: 80%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .back-button {
-            margin-top: 20px;
+        .product-card p {
+            color: #555;
+            font-size: 16px;
+        }
+
+        .product-card button {
             background-color: #ff6347;
-            padding: 10px 20px;
             color: white;
+            padding: 8px 15px;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
         }
 
-        .back-button:hover {
-            background-color: #f05030;
+        .product-card button:hover {
+            background-color: #ff4500;
         }
     </style>
 </head>
 <body>
 
-<!-- Main Personal Cabinet -->
-<div class="container">
-    <!-- Left Section - User Info -->
-    <div class="left-section">
-        <img id="profileImage" class="profile-image" src="default-profile.jpg" alt="User Image">
-        <h1 id="username">Username</h1>
-        <div class="form-group">
-            <label for="usernameField">Username</label>
-            <input type="text" id="usernameField" disabled>
-        </div>
-        <div class="form-group">
-            <label for="fullName">Full Name</label>
-            <input type="text" id="fullName" disabled>
-        </div>
-        <div class="form-group">
-            <label for="phone">Phone</label>
-            <input type="tel" id="phone" disabled>
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" disabled>
-        </div>
-    </div>
+<h1>Product Management - CRUD</h1>
 
-    <!-- Right Section - Action Buttons -->
-    <div class="right-section">
-        <div class="btn-group">
-            <button onclick="enableEdit()">Edit Info</button> <!-- Only Edit Info remains -->
-            <button onclick="deleteUser()">Delete Account</button>
-            <button onclick="viewMessages()">View Messages</button>
-            <button onclick="viewAds()">View Ads</button>
-        </div>
-    </div>
+<!-- Add/Update Product Form -->
+<div class="form-container">
+    <h2>Add or Update Product</h2>
+    <form id="productForm" enctype="multipart/form-data">
+        <input type="hidden" id="productId" name="id"> <!-- Hidden input for product ID (for update) -->
+        <select id="categorySelect" name="category" required>
+            <option value="">Select Category</option>
+        </select>
+        <select id="childCategorySelect" name="childCategory" required disabled>
+            <option value="">Select Subcategory</option>
+        </select>
+        <input type="text" id="productName" name="name" placeholder="Product Name" required>
+        <input type="text" id="productDescription" name="description" placeholder="Description" required>
+        <input type="number" id="productPrice" name="price" placeholder="Price" required>
+        <input type="file" id="productImage" name="image" accept="image/*">
+        <button type="submit">Add Product</button>
+    </form>
+</div>
+
+<!-- Product List -->
+<h2>Product List</h2>
+<div class="product-container" id="productContainer">
+    <!-- Products will be displayed here -->
 </div>
 
 <script>
-    // API URL
-    const apiUrl = "http://localhost:8080/userData";
+    const token = localStorage.getItem('authToken'); // Retrieve the token from localStorage
+    if (!token) {
+        alert("You are not logged in.");
+        window.location.href = '/login.html'; // Redirect to login page if no token
+    }
 
-    let userId = null; // Variable to hold the user ID
+    // Fetch categories and display them in the dropdown
+    fetchCategories();
 
-    // Fetch and display user data
-    function getUserData() {
-        fetch(apiUrl, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include' // Include cookies for authentication
+    function fetchCategories() {
+        fetch('http://localhost:8080/category/string', {
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            }
         })
             .then(response => response.json())
-            .then(data => {
-                userId = data.id; // Set the userId variable to the user's ID
-
-                document.getElementById('profileImage').src = data.profileImage || 'default-profile.jpg';
-                document.getElementById('username').textContent = data.username;
-                document.getElementById('usernameField').value = data.username;
-                document.getElementById('fullName').value = data.fullName;
-                document.getElementById('phone').value = data.phone;
-                document.getElementById('password').value = ''; // Ensure password field is empty for security
-            })
-            .catch(error => alert('Failed to load user data.'));
+            .then(categories => {
+                const categorySelect = document.getElementById('categorySelect');
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id; // Store category ID as value
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+            });
     }
 
-    // Enable editing of the user info fields
-    function enableEdit() {
-        document.getElementById('usernameField').disabled = false;
-        document.getElementById('fullName').disabled = false;
-        document.getElementById('phone').disabled = false;
-        document.getElementById('password').disabled = false;
-
-        // Change the button to Update Info once the user starts editing
-        const editButton = document.querySelector('button[onclick="enableEdit()"]');
-        editButton.textContent = "Update Info"; // Change the text to "Update Info"
-        editButton.setAttribute("onclick", "updateUser()"); // Update the function to "updateUser"
-    }
-
-    // Update user info
-    function updateUser() {
-        const updatedData = {
-            id: userId,
-            username: document.getElementById('usernameField').value,
-            fullName: document.getElementById('fullName').value,
-            phone: document.getElementById('phone').value,
-            password: document.getElementById('password').value || null // Only update password if it's not empty
-        };
-
-        fetch(apiUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedData)
-        })
-            .then(response => {
-                if (response.ok) {
-                    alert('User info updated successfully');
-                    getUserData(); // Reload user data
-                } else {
-                    alert('Failed to update user info.');
-                }
-            })
-            .catch(error => alert('Failed to update user info.'));
-    }
-
-    // Delete user account
-    function deleteUser() {
-        if (confirm("Are you sure you want to delete your account?")) {
-            fetch(`${apiUrl}/${userId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Account deleted successfully');
-                        window.location.href = '/login.html'; // Redirect to login page
-                    } else {
-                        alert('Failed to delete account.');
-                    }
-                })
-                .catch(error => alert('Failed to delete account.'));
+    // Fetch child categories when a category is selected
+    document.getElementById('categorySelect').addEventListener('change', function() {
+        const categoryValue = this.value;
+        if (categoryValue) {
+            fetchChildCategories(categoryValue);
         }
+    });
+
+    function fetchChildCategories(categoryValue) {
+        fetch(`http://localhost:8080/child_category/stringchild/${categoryValue}`, {
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            }
+        })
+            .then(response => response.json())
+            .then(childCategories => {
+                const childCategorySelect = document.getElementById('childCategorySelect');
+                childCategorySelect.innerHTML = '<option value="">Select Subcategory</option>'; // Clear current options
+                if (Array.isArray(childCategories)) {
+                    childCategories.forEach(childCategory => {
+                        const option = document.createElement('option');
+                        option.value = childCategory.id;
+                        option.textContent = childCategory.name;
+                        childCategorySelect.appendChild(option);
+                    });
+                    childCategorySelect.disabled = false;
+                } else {
+                    childCategorySelect.disabled = true;
+                }
+            });
     }
 
-    // View Messages
-    function viewMessages() {
-        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/messages.html';
+    // Add or Update product form submission
+    document.getElementById('productForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        // Get product ID to determine if it's an update or new product
+        const productId = document.getElementById('productId').value;
+
+        if (productId) {
+            updateProduct(productId, formData); // If productId exists, it's an update
+        } else {
+            addProduct(formData); // Otherwise, it's an add
+        }
+    });
+
+    // Add a new product
+    function addProduct(formData) {
+        const childCategoryId = document.getElementById('childCategorySelect').value;
+        formData.append('childCategory', childCategoryId);
+
+        fetch('http://localhost:8080/product/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(() => {
+                alert('Product added successfully');
+                fetchProducts(); // Refresh product list
+                document.getElementById('productForm').reset(); // Clear form
+            })
+            .catch(error => console.error('Error adding product:', error));
     }
 
-    // View Ads
-    function viewAds() {
-        window.location.href = 'http://localhost:63342/OLXk/security-test/templates/ads.html';
+    // Update an existing product
+    function updateProduct(productId, formData) {
+        fetch(`http://localhost:8080/product/update?id=${productId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(() => {
+                alert('Product updated successfully');
+                fetchProducts(); // Refresh product list
+                document.getElementById('productForm').reset(); // Clear form
+            })
+            .catch(error => console.error('Error updating product:', error));
     }
 
-    // Load user data when the page loads
-    getUserData();
+    // Fetch product list
+    function fetchProducts() {
+        fetch('http://localhost:8080/product/myOwn', {
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            }
+        })
+            .then(response => response.json())
+            .then(products => {
+                const productContainer = document.getElementById('productContainer');
+                productContainer.innerHTML = '';
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.classList.add('product-card');
+                    productCard.innerHTML = `
+                        <img src="http://localhost:8080/images/${product.attachmentId}" alt="Category Image">
+                        <h3>${product.name}</h3>
+                        <p>${product.description}</p>
+                        <p>Price: $${product.price}</p>
+                        <button onclick="editProduct(${product.id})">Edit</button>
+                        <button onclick="deleteProduct(${product.id})">Delete</button>
+                    `;
+                    productContainer.appendChild(productCard);
+                });
+            });
+    }
+
+    // Delete product
+    function deleteProduct(productId) {
+        fetch(`http://localhost:8080/product/delete/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            }
+        })
+            .then(response => response.json())
+            .then(() => {
+                alert('Product deleted');
+                fetchProducts(); // Refresh product list
+            });
+    }
+
+    // Edit product
+    function editProduct(productId) {
+        fetch(`http://localhost:8080/product/one/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request
+            }
+        })
+            .then(response => response.json())
+            .then(product => {
+                document.getElementById('productId').value = product.id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productDescription').value = product.description;
+                document.getElementById('productPrice').value = product.price;
+
+                // Set selected category and child category
+                document.getElementById('categorySelect').value = product.categoryId;
+                fetchChildCategories(product.categoryId); // Load child categories based on selected category
+                setTimeout(() => {
+                    document.getElementById('childCategorySelect').value = product.childCategoryId; // Set child category
+                }, 500); // Delay to ensure child categories are loaded
+            })
+            .catch(error => console.error('Error fetching product details:', error));
+    }
+
+    // Initialize by fetching products
+    fetchProducts();
 </script>
 
 </body>

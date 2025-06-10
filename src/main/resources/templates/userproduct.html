@@ -29,6 +29,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
         }
         .product-card img {
             width: 100%;
@@ -58,7 +61,7 @@
 <script>
     async function getCategoryIdFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('categoryId');
+        return urlParams.get('childCategoryId');
     }
 
     async function loadProducts() {
@@ -81,10 +84,14 @@
                 productCard.innerHTML = `
                     <div class="product-name">${product.name}</div>
                     <div class="product-image">
-                        <img src="http://localhost:8080/images/${product.imageId}" alt="${product.name}">
+                        <img src="http://localhost:8080/images/${product.attachmentId}" alt="${product.name}">
                     </div>
                     <div class="product-price">${product.price}</div>
                 `;
+                productCard.addEventListener('click', () => {
+                    console.log('Product card clicked!', product.id); // Tekshirish uchun
+                    window.location.href = `http://localhost:63342/OLXk/security-test/templates/oneproduct.html?productId=${product.id}`;
+                });
                 container.appendChild(productCard);
             });
         } catch (error) {

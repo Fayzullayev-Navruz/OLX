@@ -1,22 +1,22 @@
 package uz.pdp.securitytest.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uz.pdp.securitytest.entity.Role;
 import uz.pdp.securitytest.entity.RolePermission;
 import uz.pdp.securitytest.entity.User;
 import uz.pdp.securitytest.enums.PermissionEnum;
+
 import uz.pdp.securitytest.exception.RestException;
 import uz.pdp.securitytest.mapper.RoleMapper;
 import uz.pdp.securitytest.payload.RoleDTO;
 import uz.pdp.securitytest.repository.RolePermissionRepository;
 import uz.pdp.securitytest.repository.RoleRepository;
 import uz.pdp.securitytest.repository.UserRepository;
+import uz.pdp.securitytest.utils.RoleName;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -50,7 +50,7 @@ public class RoleServiceImpl implements RoleService {
                 RoleDTO roleDTO1 = roleMapper.toRoleDTO(role.get());
                 roleDTO1.setPermissions(enums);
                 return roleDTO1;
-            } else throw RestException.notFound("Not found ", roleDTO.getName());
+            } else throw new RuntimeException("user not found");
         }
 
 
@@ -94,8 +94,16 @@ public class RoleServiceImpl implements RoleService {
 
 
         if (roleRepository.findByName(roleDTO.getName()).isPresent()) {
-            throw RestException.alreadyHave("this role already have -> ", roleDTO.getName());
+            throw RestException.alreadyHave("Role already have", roleDTO.getName());
         }
+
+
+        List<PermissionEnum> checkPermissions = roleDTO.getPermissions();
+
+        if (hasDuplicate(checkPermissions)) {
+            throw RestException.alreadyHave(" Duplicate permission !!!! ", null);
+        }
+
 
         Role newRole = roleRepository.save(roleMapper.toRole(roleDTO));
 
@@ -108,57 +116,88 @@ public class RoleServiceImpl implements RoleService {
 
         }
 
+
+        Integer id = newRole.getId();
+
+        roleDTO.setId(id);
+
         return roleDTO;
 
     }
 
 
+    @Transactional
     @Override
     public RoleDTO update(Integer id, RoleDTO roleDTO) {
 
-        Role role = roleRepository.findById(id).orElseThrow(() -> RestException.notFound("Not found ", id));
+
+        if (roleRepository.findByName(roleDTO.getName()).isPresent()) {
+            throw RestException.alreadyHave("Role already have", roleDTO.getName());
+        }
+
+        List<PermissionEnum> checkPermissions = roleDTO.getPermissions();
+
+        if (hasDuplicate(checkPermissions)) {
+            throw RestException.alreadyHave(" Duplicate permission !!!! ", null);
+        }
+
+        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Role not found"));
 
 
-
-        System.out.println(role);
-
-
-        delete(id);
-
-        create(roleDTO);
+        rolePermissionRepository.deleteAllByRole(role);
 
 
+        roleMapper.updateRole(roleDTO, role);
 
+
+        List<PermissionEnum> permissions = roleDTO.getPermissions();
+
+        for (PermissionEnum permission : permissions) {
+            RolePermission rolePermission = new RolePermission(permission);
+            rolePermission.setRole(role);
+            rolePermissionRepository.save(rolePermission);
+        }
+
+
+        roleRepository.save(role);
+
+        roleDTO.setId(id);
 
         return roleDTO;
     }
 
     @Override
-    public RoleDTO delete(Integer id) {
+    public void delete(Integer id) {
 
-        Role role = roleRepository.findById(id).orElseThrow(() -> RestException.notFound("Not found ", id));
-
-
-
-
-        RoleDTO roleDTO = roleMapper.toRoleDTO(role);
-
+        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Role not found"));
 
         rolePermissionRepository.deleteAll(role.getRolePermissions());
 
+        Optional<Role> role1 = roleRepository.findByName(RoleName.USER_ROLE);
+        if (role1.isEmpty()) {
+            throw new RuntimeException("role not found");
+        }
+
         List<User> allByRole = userRepository.findAllByRole(role);
         for (User user : allByRole) {
-            user.setRole(null);
+            user.setRole(role1.get());
             userRepository.save(user);
         }
 
 
         roleRepository.delete(role);
 
-//        System.out.println(roleDTO);
 
-        return roleDTO;
+    }
 
 
+    public static <E extends Enum<E>> boolean hasDuplicate(List<E> enumList) {
+        Set<E> set = new HashSet<>();
+        for (E e : enumList) {
+            if (!set.add(e)) {
+                return true; // Duplicate found
+            }
+        }
+        return false;
     }
 }

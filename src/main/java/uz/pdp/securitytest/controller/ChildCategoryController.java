@@ -1,90 +1,67 @@
 package uz.pdp.securitytest.controller;
 
 import jakarta.servlet.annotation.MultipartConfig;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uz.pdp.securitytest.ApiResponse;
 import uz.pdp.securitytest.entity.Category;
 import uz.pdp.securitytest.entity.ChildCategory;
+import uz.pdp.securitytest.payload.CategoryAndChildCategoryRecord;
 import uz.pdp.securitytest.payload.ChildCategoryDto;
 import uz.pdp.securitytest.repository.CategoryRepository;
 import uz.pdp.securitytest.repository.ChildCategoryRepository;
+import uz.pdp.securitytest.service.ChildCategoryService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 @MultipartConfig
 @RestController
 @RequestMapping("/child_category")
 @CrossOrigin(origins = "http://localhost:63342")
 public class ChildCategoryController {
-    private final ChildCategoryRepository childCategoryRepository;
-    private final CategoryRepository categoryRepository;
+    private final ChildCategoryService childCategoryService;
 
-    public ChildCategoryController(ChildCategoryRepository childCategoryRepository, CategoryRepository categoryRepository) {
-        this.childCategoryRepository = childCategoryRepository;
-        this.categoryRepository = categoryRepository;
+    public ChildCategoryController(ChildCategoryService childCategoryService) {
+        this.childCategoryService = childCategoryService;
     }
 
     @GetMapping("/{Id}")
-    public ResponseEntity<List<ChildCategoryDto>> read(@PathVariable Integer Id) {
-        List<ChildCategory> byCategoryId = childCategoryRepository.findByCategory_Id(Id);
-        ArrayList<ChildCategoryDto> childCategoryDtos = new ArrayList<>();
-        for (ChildCategory childCategory : byCategoryId) {
-            ChildCategoryDto childCategoryDto = new ChildCategoryDto();
-            childCategoryDto.setId(childCategory.getId());
-            childCategoryDto.setName(childCategory.getName());
-            childCategoryDto.setCategoryId(childCategory.getCategory().getId());
-            childCategoryDtos.add(childCategoryDto);
-        }
-
-        return ResponseEntity.ok(childCategoryDtos);
+    public ApiResponse read(@PathVariable Integer Id) {
+        List<ChildCategoryDto> read = childCategoryService.read(Id);
+        return new ApiResponse<>(HttpStatus.OK.toString(), read);
     }
 
+    @GetMapping("/stringchild/{categoryValue}")
+    public ApiResponse readString(@PathVariable Integer categoryValue) {
+
+        List<CategoryAndChildCategoryRecord> categoryAndChildCategoryRecords = childCategoryService.readString(categoryValue);
+        return new ApiResponse<>(HttpStatus.OK.toString(),categoryAndChildCategoryRecords);
+    }
+
+
+    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @PostMapping("/create")
-    public ResponseEntity<ChildCategoryDto> create(@RequestParam("name") String name, @RequestParam("parentId") Integer parentId) {
-        Optional<Category> categoryOpt = categoryRepository.findById(parentId);
-        if (categoryOpt.isPresent()) {
-            ChildCategory childCategory = new ChildCategory();
-            childCategory.setName(name);
-            childCategory.setCategory(categoryOpt.get());
-            childCategoryRepository.save(childCategory);
-
-            ChildCategoryDto dto = new ChildCategoryDto();
-            dto.setId(childCategory.getId());
-            dto.setName(childCategory.getName());
-            dto.setCategoryId(parentId);
-            return ResponseEntity.ok(dto);
-        }
-        return ResponseEntity.badRequest().build();
+    public ApiResponse create(@RequestParam("name") String name, @RequestParam("parentId") Integer parentId) {
+        ChildCategoryDto childCategoryDto = childCategoryService.create(name, parentId);
+        return new ApiResponse<>(HttpStatus.CREATED.toString(), childCategoryDto);
     }
 
+    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @PutMapping("/update/{id}")
-    public ResponseEntity<ChildCategoryDto> update(@PathVariable Integer id, @RequestParam("name") String name, @RequestParam("parentId") Integer parentId) {
-        Optional<ChildCategory> optionalCategory = childCategoryRepository.findById(id);
-        Optional<Category> parentCategory = categoryRepository.findById(parentId);
-
-        if (optionalCategory.isPresent() && parentCategory.isPresent()) {
-            ChildCategory childCategory = optionalCategory.get();
-            childCategory.setName(name);
-            childCategory.setCategory(parentCategory.get());
-            childCategoryRepository.save(childCategory);
-
-            ChildCategoryDto dto = new ChildCategoryDto();
-            dto.setId(childCategory.getId());
-            dto.setName(childCategory.getName());
-            dto.setCategoryId(parentId);
-            return ResponseEntity.ok(dto);
-        }
-        return ResponseEntity.notFound().build();
+    public ApiResponse update(@PathVariable Integer id, @RequestParam("name") String name, @RequestParam("parentId") Integer parentId) {
+        ChildCategoryDto update = childCategoryService.update(id, name, parentId);
+        return new ApiResponse<>(HttpStatus.OK.toString(), update);
     }
 
+    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Integer id) {
-        if (childCategoryRepository.existsById(id)) {
-            childCategoryRepository.deleteById(id);
-            return ResponseEntity.ok("Category deleted successfully!");
-        }
-        return ResponseEntity.notFound().build();
+    public ApiResponse delete(@PathVariable Integer id) {
+        ChildCategoryDto delete = childCategoryService.delete(id);
+        return new ApiResponse<>(HttpStatus.OK.toString(), delete);
     }
 }
 

@@ -3,6 +3,7 @@ package uz.pdp.securitytest.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.lang.NonNull;
 
@@ -18,6 +19,7 @@ public class Category implements Parent {
     private Integer id;
 
     @NonNull
+    @Column(unique = true, nullable = false)
     private String name;
 
     @OneToMany(mappedBy ="category" )

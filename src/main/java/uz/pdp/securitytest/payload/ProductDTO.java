@@ -26,6 +26,8 @@ public class ProductDTO {
     private String imageUrl;
     private String description;
 
+    private Integer AttachmentId;
+private String userPhone;
 
     private Boolean isActive = false;
 
@@ -95,6 +97,22 @@ public class ProductDTO {
 
     public void setIs_check(Boolean is_check) {
         this.is_check = is_check;
+    }
+
+    public Integer getAttachmentId() {
+        return AttachmentId;
+    }
+
+    public void setAttachmentId(Integer attachmentId) {
+        AttachmentId = attachmentId;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
     }
 
     @Override

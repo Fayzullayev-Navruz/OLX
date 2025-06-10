@@ -24,6 +24,9 @@
             max-height: 500px;
             overflow-y: auto;
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .message {
@@ -32,6 +35,20 @@
             border-radius: 8px;
             margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .message-left {
+            background-color: #cce5ff; /* Light blue for the left side */
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .message-right {
+            background-color: #d4edda; /* Light green for the right side */
+            margin-left: auto;
+            margin-right: 0;
         }
 
         .sender-info {
@@ -86,6 +103,12 @@
         .back-button:hover {
             background-color: #f05030;
         }
+
+        @media (max-width: 800px) {
+            .message {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -104,11 +127,20 @@
 </div>
 
 <script>
+    // Get the auth token from localStorage
+    const token = localStorage.getItem('authToken');
+
+    // Check if the token exists
+    if (!token) {
+        alert('No authentication token found. Please log in.');
+        window.location.href = 'login.html'; // Redirect to login page
+    }
+
     // Get the sender from the URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const sender = urlParams.get('userName');
-    let senderId=null;
-    let productId=null;
+    let senderId = null;
+    let productId = null;
 
     if (!sender) {
         alert('No sender found. Redirecting back...');
@@ -121,7 +153,10 @@
     function getChatMessages() {
         fetch(`http://localhost:8080/message/${sender}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Include the token in the headers
+            },
             credentials: 'same-origin'
         })
             .then(response => response.json())
@@ -129,9 +164,8 @@
                 const chatContainer = document.getElementById('chatContainer');
                 chatContainer.innerHTML = ''; // Clear chat before rendering
                 messages.forEach(msg => {
-                    console.log(msg);
-                    senderId=msg.sender.id;
-                    productId=msg.productId;
+                    senderId = msg.sender.id;
+                    productId = msg.productId;
                     console.log(senderId);
                     console.log(productId);
                     const messageDiv = document.createElement('div');
@@ -146,6 +180,13 @@
                     const contentDiv = document.createElement('div');
                     contentDiv.classList.add('message-content');
                     contentDiv.textContent = msg.message;
+
+                    // Style the message div based on the sender
+                    if (msg.sender.username === sender) {
+                        messageDiv.classList.add('message-left'); // Light blue for the left side
+                    } else {
+                        messageDiv.classList.add('message-right'); // Light green for the right side
+                    }
 
                     // Append the sender and message content to the messageDiv
                     messageDiv.appendChild(senderDiv);
@@ -172,9 +213,12 @@
             senderId: senderId // Send the sender ID (username or other identifier)
         };
 
-        fetch(`http://localhost:8080/message`, {
+        fetch(`http://localhost:8080/message/${sender}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Include the token in the headers
+            },
             credentials: 'same-origin',
             body: JSON.stringify(messageDto)
         })
@@ -193,7 +237,6 @@
                 alert('Failed to send message.');
             });
     }
-
 
     // Navigate back to the previous page
     function goBack() {

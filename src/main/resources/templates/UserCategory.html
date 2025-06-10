@@ -1,159 +1,9 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
-<!--<head>-->
-<!--    <meta charset="UTF-8">-->
-<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-<!--    <title>User Category Management</title>-->
-<!--    &lt;!&ndash; Font Awesome CSS &ndash;&gt;-->
-<!--    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">-->
-
-<!--    <style>-->
-<!--        /* Global Styles */-->
-<!--        body {-->
-<!--            font-family: 'Helvetica Neue', Arial, sans-serif;-->
-<!--            background-color: #f9f9f9;-->
-<!--            color: #333;-->
-<!--            margin: 0;-->
-<!--            padding: 0;-->
-<!--            display: flex;-->
-<!--            flex-direction: column;-->
-<!--            justify-content: center;-->
-<!--            align-items: center;-->
-<!--            min-height: 100vh;-->
-<!--        }-->
-
-<!--        h1 {-->
-<!--            font-size: 2rem;-->
-<!--            font-weight: bold;-->
-<!--            margin: 20px;-->
-<!--            color: #007bff;-->
-<!--        }-->
-
-<!--        .category-container {-->
-<!--            display: grid;-->
-<!--            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));-->
-<!--            gap: 20px;-->
-<!--            max-width: 1200px;-->
-<!--            width: 100%;-->
-<!--            padding: 20px;-->
-<!--            box-sizing: border-box;-->
-<!--        }-->
-
-<!--        /* Category Card Styles */-->
-<!--        .category-card {-->
-<!--            background-color: #fff;-->
-<!--            padding: 20px;-->
-<!--            border-radius: 15px;-->
-<!--            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);-->
-<!--            transition: transform 0.3s ease, box-shadow 0.3s ease;-->
-<!--            display: flex;-->
-<!--            flex-direction: column;-->
-<!--            align-items: center;-->
-<!--            justify-content: space-between;-->
-<!--            text-align: center;-->
-<!--            cursor: pointer;-->
-<!--            overflow: hidden;-->
-<!--            height: 300px;-->
-<!--        }-->
-
-<!--        .category-card:hover {-->
-<!--            transform: translateY(-5px);-->
-<!--            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);-->
-<!--        }-->
-
-<!--        /* Category Image Container */-->
-<!--        .category-image-container {-->
-<!--            width: 160px;-->
-<!--            height: 160px;-->
-<!--            border-radius: 50%;-->
-<!--            overflow: hidden;-->
-<!--            margin-bottom: 15px;-->
-<!--            transition: transform 0.3s ease;-->
-<!--        }-->
-
-<!--        .category-image-container img {-->
-<!--            width: 100%;-->
-<!--            height: 100%;-->
-<!--            object-fit: cover;-->
-<!--        }-->
-
-<!--        .category-name {-->
-<!--            font-weight: bold;-->
-<!--            font-size: 1.2rem;-->
-<!--            color: #333;-->
-<!--            margin-bottom: 10px;-->
-<!--            transition: color 0.3s ease;-->
-<!--        }-->
-
-<!--        .category-card:hover .category-name {-->
-<!--            color: #007bff;-->
-<!--        }-->
-
-<!--        /* Font Awesome Icon */-->
-<!--        .category-icon {-->
-<!--            font-size: 3rem;-->
-<!--            color: #007bff;-->
-<!--            margin-bottom: 15px;-->
-<!--            transition: color 0.3s ease;-->
-<!--        }-->
-
-<!--        .category-card:hover .category-icon {-->
-<!--            color: #0056b3;-->
-<!--        }-->
-
-<!--        /* Responsive Design */-->
-<!--        @media (max-width: 768px) {-->
-<!--            h1 {-->
-<!--                font-size: 1.5rem;-->
-<!--            }-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
-
-<!--<h1>📂 User Category Management</h1>-->
-
-<!--<div class="category-container" id="categoryContainer"></div>-->
-
-<!--<script>-->
-<!--    async function loadCategories() {-->
-<!--        try {-->
-<!--            let response = await fetch('http://localhost:8080/category');-->
-<!--            let categories = await response.json();-->
-<!--            const container = document.getElementById('categoryContainer');-->
-<!--            container.innerHTML = '';-->
-
-<!--            categories.forEach(category => {-->
-<!--                const card = document.createElement('div');-->
-<!--                card.classList.add('category-card');-->
-<!--                card.onclick = () => window.location.href = `UserChildCategory.html?categoryId=${category.id}`;-->
-<!--                card.innerHTML = `-->
-<!--                    <div class="category-image-container">-->
-<!--                        <img src="http://localhost:8080/images/${category.attachmentId}" alt="Category Image" onerror="this.src='http://localhost:8080/images/default-image.png';">-->
-<!--                    </div>-->
-<!--                    <div class="category-name">${category.name}</div>-->
-<!--                    <i class="fas fa-arrow-right category-icon"></i>-->
-<!--                `;-->
-<!--                container.appendChild(card);-->
-<!--            });-->
-<!--        } catch (error) {-->
-<!--            console.error('Error loading categories:', error);-->
-<!--        }-->
-<!--    }-->
-
-<!--    window.onload = loadCategories;-->
-<!--</script>-->
-
-<!--</body>-->
-<!--</html>-->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Category Management</title>
+    <title>Kategoriyalar</title>
     <!-- Font Awesome CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
@@ -165,12 +15,12 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start; /* Start from top to avoid overlap */
             align-items: center;
             min-height: 100vh;
             transition: background-color 0.3s, color 0.3s;
-            background-color: #fff; /* Default light mode background */
-            color: #333; /* Default text color */
+            background-color: #fff;
+            color: #333;
         }
 
         h1 {
@@ -180,6 +30,36 @@
             color: #00bfff; /* Sky Blue */
         }
 
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            flex-wrap: wrap; /* Ensure navbar items wrap on smaller screens */
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #00bfff;
+        }
+
+        /* Category Container Styles */
         .category-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -188,11 +68,12 @@
             width: 100%;
             padding: 20px;
             box-sizing: border-box;
+            margin-top: 80px; /* Adjusted margin for navbar */
         }
 
         /* Category Card Styles */
         .category-card {
-            background-color: #fff; /* Light background for cards */
+            background-color: #fff;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
@@ -231,42 +112,42 @@
         .category-name {
             font-weight: bold;
             font-size: 1.2rem;
-            color: #333; /* Dark text */
+            color: #333;
             margin-bottom: 10px;
             transition: color 0.3s ease;
         }
 
         .category-card:hover .category-name {
-            color: #00bfff; /* Sky Blue */
+            color: #00bfff;
         }
 
         .category-icon {
             font-size: 3rem;
-            color: #00bfff; /* Sky Blue */
+            color: #00bfff;
             margin-bottom: 15px;
             transition: color 0.3s ease;
         }
 
         .category-card:hover .category-icon {
-            color: #1e90ff; /* Dodger Blue */
+            color: #1e90ff;
         }
 
         /* Dark Mode */
         .dark-mode {
-            background-color: #1a1a1a; /* Dark background */
+            background-color: #1a1a1a;
             color: #fff;
         }
 
         .dark-mode .category-card {
-            background-color: #333; /* Dark background for cards */
+            background-color: #333;
         }
 
         .dark-mode .category-name {
-            color: #fff; /* White text in dark mode */
+            color: #fff;
         }
 
         .dark-mode .category-icon {
-            color: #00bfff; /* Sky Blue icon */
+            color: #00bfff;
         }
 
         /* Switch */
@@ -296,23 +177,46 @@
         }
 
         .switch input:checked + .switch-label {
-            color: #00bfff; /* Sky Blue */
+            color: #00bfff;
         }
 
         .switch input:checked + .switch-label:before {
-            content: '\f186'; /* Font Awesome moon icon for dark mode */
+            content: '\f186';
             font-family: "Font Awesome 5 Free";
-            font-weight: 900;
+            font-weight: 800;
         }
 
         .switch input:not(:checked) + .switch-label:before {
-            content: '\f185'; /* Font Awesome sun icon for light mode */
+            content: '\f185';
             font-family: "Font Awesome 5 Free";
-            font-weight: 900;
+            font-weight: 800;
         }
+
+        /* Adjust category container */
+        @media screen and (max-width: 708px) {
+            .navbar a {
+                font-size: 1rem;
+            }
+            .category-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Smaller columns on mobile */
+            }
+            .category-card {
+                height: auto; /* Allow the category card to grow based on content */
+            }
+        }
+
     </style>
 </head>
 <body class="light-mode" id="body">
+
+<!-- Navbar -->
+<div class="navbar">
+    <a href="#">Home</a>
+    <div>
+        <a href="login.html">Login</a>
+        <a href="sign_up.html">Sign Up</a>
+    </div>
+</div>
 
 <!-- Switch for dark/light mode -->
 <div class="switch">
@@ -320,7 +224,7 @@
     <label for="themeSwitcher" class="switch-label"></label>
 </div>
 
-<h1>📂 User Category Management</h1>
+<h1>Kategoriyalar</h1>
 
 <div class="category-container" id="categoryContainer"></div>
 
@@ -369,4 +273,3 @@
 
 </body>
 </html>
-

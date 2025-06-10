@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Products</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .product {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .product:hover {
+            transform: scale(1.02);
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>Approved Products</h2>
+    <a href="manager.html">Back to Dashboard</a>
+</div>
+
+<div class="container">
+    <h1>Approved Products</h1>
+    <div id="productContainer"></div>
+</div>
+
+<script>
+    function getApprovedProducts() {
+        fetch('http://localhost:8080/uncheck/checked1', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        })
+            .then(response => response.json())
+            .then(products => {
+                const container = document.getElementById('productContainer');
+                container.innerHTML = '';
+
+                if (!products.length) {
+                    container.innerHTML = '<p>No approved products.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const div = document.createElement('div');
+                    div.classList.add('product');
+                    div.innerHTML = `
+                    <div>
+                        <strong>Name:</strong> ${product.name}<br>
+                        <strong>Price:</strong> $${product.price}
+                    </div>
+                    <button class="btn" onclick="updateProductStatus(${product.id}, false)">Reject</button>
+                `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(() => alert('Failed to load products.'));
+    }
+
+    getApprovedProducts();
+</script>
+
+</body>
+</html>

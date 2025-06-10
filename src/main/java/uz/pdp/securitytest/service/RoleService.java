@@ -16,5 +16,6 @@ public interface RoleService {
 
     RoleDTO update(Integer id, RoleDTO roleDTO);
 
-    RoleDTO delete(Integer id);
+    void delete(Integer id);
 }
+

@@ -1,18 +1,29 @@
 package uz.pdp.securitytest.payload;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import uz.pdp.securitytest.entity.Role;
 
-@Setter
-@Getter
+import javax.validation.constraints.NegativeOrZero;
+
+
+//@Setter
+//@Getter
+@AllArgsConstructor
+@NegativeOrZero
+@Data
 public class UserDto {
     private Integer id;
     private String username;
     private String password;
     private String fullName;
-    private String phone;
-    private RoleDTO roleDTO;
+    private String phoneNumber;
+
+    //    private RoleDTO roleDTO;
+    private Integer roleId;
+    private String email;
 
     public UserDto() {
     }
@@ -21,6 +32,7 @@ public class UserDto {
         this.username = username;
         this.password = password;
         this.fullName = fullName;
-        this.phone = phone;
+        this.phoneNumber = phone;
     }
+
 }

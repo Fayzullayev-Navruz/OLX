@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Products</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f4f4f6;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h2 {
+            margin-left: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: white;
+            margin-right: 20px;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #cce5ff;
+            text-decoration: underline;
+        }
+
+        /* Container */
+        .container {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #1e3a8a;
+        }
+
+        /* Product Card */
+        .product {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .product:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Image Styling (Optional, if backend provides it) */
+        .product-image-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .product-image-container img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Product Details */
+        .product-details {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .product-details strong {
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .product-details br {
+            margin-bottom: 5px;
+        }
+
+        /* Button */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: #dc3545;
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>Approved Products</h2>
+    <a href="manager.html">Back to Dashboard</a>
+</div>
+
+<div class="container">
+    <h1>Approved Products</h1>
+    <div id="productContainer"></div>
+</div>
+
+<script>
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        alert("You are not logged in.");
+        window.location.href = '/login.html';
+    }
+
+    function getApprovedProducts() {
+        fetch('http://localhost:8080/uncheck/checked1', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(products => {
+                const container = document.getElementById('productContainer');
+                container.innerHTML = '';
+
+                if (!products.length) {
+                    container.innerHTML = '<p>No approved products.</p>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const div = document.createElement('div');
+                    div.classList.add('product');
+                    div.innerHTML = `
+                        <!-- Optional Image (uncomment if backend provides attachmentId) -->
+                        <!--
+                        <div class="product-image-container">
+                            <img src="http://localhost:8080/images/${product.attachmentId || 'default-image.png'}" alt="${product.name}" onerror="this.src='http://localhost:8080/images/default-image.png';">
+                        </div>
+                        -->
+                        <div class="product-details">
+                            <strong>Name:</strong> ${product.name}<br>
+                            <strong>Price:</strong> $${product.price}<br>
+                            <strong>Category:</strong> ${product.childCategory ? product.childCategory.name : 'No Category'}<br>
+                            <strong>Description:</strong> ${product.description || 'No description'}
+                        </div>
+                        <button class="btn" onclick="updateProductStatus(${product.id}, false)">Reject</button>
+                    `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(() => alert('Failed to load products.'));
+    }
+
+    function updateProductStatus(productId, isApproved) {
+        fetch('http://localhost:8080/uncheck', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: productId, is_check: isApproved })
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Rejected!');
+                    getApprovedProducts(); // Refresh the list
+                } else {
+                    alert('Failed to update status.');
+                }
+            })
+            .catch(() => alert('Error updating status.'));
+    }
+
+    getApprovedProducts();
+</script>
+
+</body>
+</html>

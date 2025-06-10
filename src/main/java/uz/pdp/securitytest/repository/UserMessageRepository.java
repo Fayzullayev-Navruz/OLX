@@ -13,7 +13,7 @@ public interface UserMessageRepository extends JpaRepository<UserMessage, Intege
     @Query("select u from UserMessage u where u.accepter.id=:userId or u.sender.id=:userId")
     List<UserMessage> findByUserId(Integer userId);
 
-    @Query("select u from UserMessage u where (u.sender.id=:userId and u.accepter.username=:userName) or (u.accepter.id=:userId and u.sender.username=:userName ) order by u.timestamp desc ")
-    List<UserMessage> findByChat(Integer userId,String userName);
+    @Query("select u from UserMessage u where (u.sender.id=:userId and u.accepter.email=:fullName) or (u.accepter.id=:userId and u.sender.email=:fullName ) order by u.timestamp asc")
+    List<UserMessage> findByChat(Integer userId,String fullName);
 }
 

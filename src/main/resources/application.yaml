@@ -3,12 +3,15 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/uuuuuurrrr
+    url: jdbc:postgresql://localhost:5432/security
     username: postgres
-    password: Big2005boy
+    password: 123
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+jwt:
+  secretKey: "7efd2e7d81467f624a7b546e4594375ff1e4735a4cf1486fb99a2133b1098f465133aff6f8fb1e960e728ea49165aa6c73bb3a0e368ef3efb96ecbec79da6194ad1cf8ac3c9770559fd69cd13f4e78c0f10697b46b098a59ed75fc56e45d20698739cb69b314d6769cd27a5c5f7e0b37a39216182098f6e173c136a3d6f581576a7bd9093b6ccc472e500e97ef4ee6a75a12a3e6af75b9fa66823d0225a47f78bae3a1eaefbc995691b0f79f85ce1f5c07deeaf972e887f47d906305bff414cc66044830cf7e40c67bf87200ca30f10cd1eb00b29e523c7e19ca3bc3069f6b51d4c29fdadcc80e4d4f0e12bc7aca7a77fb087d5a24bd2d02ae55153e84584fbd"

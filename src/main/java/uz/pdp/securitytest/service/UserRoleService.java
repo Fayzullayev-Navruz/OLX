@@ -21,4 +21,9 @@ public interface UserRoleService {
     List<UserDto> getSimpleUsers();
 
     List<RoleDTO> getRoles();
+
+    UserDto getOneUser(String username);
 }
+
+
+

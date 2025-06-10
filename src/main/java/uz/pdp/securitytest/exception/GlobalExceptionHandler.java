@@ -12,19 +12,21 @@ import java.sql.Timestamp;
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<ErrorDTO> handleException(Exception e) {
-
-        ErrorDTO errorDTO = new ErrorDTO(
-                new Timestamp(System.currentTimeMillis()),
-                e.getMessage(),
-                500
-        );
-
-
-        return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
-
-    }
+//    @ExceptionHandler(value = Exception.class)
+//    public ResponseEntity<ErrorDTO> handleException(Exception e) {
+//        System.out.println("e.getMessage() = " + e.getMessage());
+//        e.getStackTrace();
+//
+//        ErrorDTO errorDTO = new ErrorDTO(
+//                new Timestamp(System.currentTimeMillis()),
+//                e.getMessage(),
+//                500
+//        );
+//
+//
+//        return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+//
+//  //  }
 
     @ExceptionHandler(value = RestException.class)
     public ResponseEntity<ErrorDTO> handleRestException(RestException e) {
@@ -33,6 +35,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 400
         );
+        System.out.println("errorDTO = " + errorDTO);
 
         return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
     }

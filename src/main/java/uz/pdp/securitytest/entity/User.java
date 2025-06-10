@@ -1,22 +1,24 @@
 package uz.pdp.securitytest.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import uz.pdp.securitytest.enums.Priority;
 import uz.pdp.securitytest.enums.RoleEnum;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-/**
- Created by: Mehrojbek
- DateTime: 15/01/25 21:39
- **/
+@AllArgsConstructor
+@Setter
+@Getter
 @Entity(name = "users")
-public class User implements UserDetails {
+public class User  implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,15 +30,19 @@ public class User implements UserDetails {
 
     private String fullName;
 
-    private String phone;
+    private String phoneNumber;
     @Column()
     private uz.pdp.securitytest.enums.Priority priority=Priority.BRONZE;
 
-//    @Enumerated(EnumType.STRING)
-//    private RoleEnum role;
+
+
+    private String passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
+
+    private String email;
 
     public User(String username, String password, Role role) {
         this.username = username;
@@ -44,28 +50,39 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+//
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//
+//        List<SimpleGrantedAuthority> permissions = this.role.getRolePermissions().stream()
+//                .map(RolePermission::getPermission)
+//                .map(permissionEnum -> new SimpleGrantedAuthority(permissionEnum.name()))
+//                .collect(Collectors.toList());
+//
+//        return permissions;
+//
+//        //"ROLE_USER",
+////        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_"+role.name());
+//
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
         List<SimpleGrantedAuthority> permissions = this.role.getRolePermissions().stream()
                 .map(RolePermission::getPermission)
                 .map(permissionEnum -> new SimpleGrantedAuthority(permissionEnum.name()))
                 .collect(Collectors.toList());
 
         return permissions;
-
-        //"ROLE_USER",
-//        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_"+role.name());
-
-//        return List.of(grantedAuthority);
     }
 
-    @Override
+    ////        return List.of(grantedAuthority);
+//    }
+
+
     public String getPassword() {
         return password;
     }
 
-    @Override
+
     public String getUsername() {
         return username;
     }
@@ -105,12 +122,12 @@ public class User implements UserDetails {
         this.fullName = fullName;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     @Override
@@ -120,5 +137,39 @@ public class User implements UserDetails {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 '}';
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public LocalDateTime getPasswordResetTokenExpiry() {
+        return passwordResetTokenExpiry;
+    }
+
+    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
     }
 }

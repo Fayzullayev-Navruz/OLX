@@ -16,4 +16,5 @@ import java.io.Serializable;
 public class SenderDto implements Serializable {
     private Integer id;
     private String username;
+
 }

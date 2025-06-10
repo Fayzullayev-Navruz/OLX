@@ -1,12 +1,20 @@
 package uz.pdp.securitytest;
 
-public class ApiResponse {
+import lombok.Data;
+
+@Data
+public class ApiResponse<E> {
     private String status;
+    private E element;
     private String message;
 
     public ApiResponse(String message) {
         this.status = "success";
         this.message = message;
+    }
+    public ApiResponse(String status, E element) {
+        this.status = status;
+        this.element = element;
     }
 
     public String getStatus() {

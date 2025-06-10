@@ -1,118 +1,100 @@
-//package uz.pdp.securitytest.controller;
+package uz.pdp.securitytest.controller;
+
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import uz.pdp.securitytest.ApiResponse;
+import uz.pdp.securitytest.entity.User;
+import uz.pdp.securitytest.payload.LoginRequest;
+import uz.pdp.securitytest.payload.TokenDTO;
+import uz.pdp.securitytest.payload.UserDto;
+import uz.pdp.securitytest.service.UserService;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/users")
+@RequiredArgsConstructor
+public class AuthController {
+    private final UserService userService;
+    private final ServletResponse servletResponse;
+
+    @PostMapping("/register")
+    public ApiResponse registerUser(@RequestBody UserDto userDto, HttpServletRequest request) throws IOException {
+       return  userService.registerUser(userDto,request);
+
+    }
+
+    @PostMapping("/login")
+    public ApiResponse login(@RequestBody LoginRequest request) {
+    return     userService.login(request);
+
+    }
+@PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name())")
+    @GetMapping("/{email}")
+    public ResponseEntity<Optional<User>> getUserByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
 //
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import jakarta.servlet.http.HttpServletRequest;
-//import jakarta.servlet.http.HttpServletResponse;
-//import jakarta.servlet.http.HttpSession;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.context.SecurityContext;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.web.bind.annotation.*;
-//import uz.pdp.securitytest.entity.Role;
-//import uz.pdp.securitytest.entity.RolePermission;
-//import uz.pdp.securitytest.entity.User;
-//import uz.pdp.securitytest.enums.PermissionEnum;
-//import uz.pdp.securitytest.repository.RolePermissionRepository;
-//import uz.pdp.securitytest.repository.RoleRepository;
-//import uz.pdp.securitytest.repository.UserRepository;
-//import uz.pdp.securitytest.payload.LoginDTO;
-//
-//import java.io.IOException;
-//import java.util.Optional;
-//
-//@RestController
-//@RequestMapping("/auth")
-//@CrossOrigin(origins = "http://localhost:63342")
-//public class AuthController {
-//    private ObjectMapper objectMapper = new ObjectMapper();
-//    private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder;
-//    private final RoleRepository roleRepository;
-//    private final RolePermissionRepository rolePermissionRepository;
-//
-//    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, RolePermissionRepository rolePermissionRepository) {
-//        this.userRepository = userRepository;
-//        this.passwordEncoder = passwordEncoder;
-//        this.roleRepository = roleRepository;
-//        this.rolePermissionRepository = rolePermissionRepository;
+//    @PostMapping("/forgot-password")
+//    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+//        String response = userService.requestPasswordReset(email);
+//        return ResponseEntity.ok(response);
 //    }
+
+//    @PostMapping("/reset-password/{token}")
+//    public ResponseEntity<String> resetPassword(@PathVariable String token, @RequestParam String newPassword) {
+//        String response = userService.resetPassword(token, newPassword);
+//        return ResponseEntity.ok(response);
+//    }
+
+//    @PutMapping("/profile")
+//    public ApiResponse updateProfile(
+//            @RequestHeader(value = "X-User-Email", required = false) String userEmail,
+//            Principal principal,
+//            @RequestBody User updatedUser) {
 //
-//    @PostMapping("/login")
-//    public void login(@RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) throws IOException {
-//        Optional<User> optionalUser = userRepository.findByUsername(loginDTO.getUsername());
-//        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//            if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-//                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//            }
+//        String email = (principal != null) ? principal.getName() : userEmail;
 //
-//            // Setting authentication context for the logged-in user
-//            SecurityContext securityContext = SecurityContextHolder.getContext();
-//            Authentication authentication = new UsernamePasswordAuthenticationToken(
-//                    user,
-//                    null,
-//                    user.getAuthorities()
-//            );
-//            securityContext.setAuthentication(authentication);
-//
-//
-//             HttpSession session = request.getSession();
-//             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-//
-//            response.setStatus(HttpStatus.OK.value());
-//            response.getWriter().write(objectMapper.writeValueAsString("Login successful!"));
+//        if (email == null || email.isEmpty()) {
+//            return
 //        }
-//
-//        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//    }
-//
-//    @PostMapping("/sign-up")
-//    public ResponseEntity<?> signUp(@RequestBody LoginDTO loginDTO) {
-//
-//        Optional<User> optionalUser = userRepository.findByUsername(loginDTO.getUsername());
-//        if (optionalUser.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists.");
+//        Optional<User> userOpt = userService.getUserByEmail(email);
+//        if (userOpt.isEmpty()) {
+//            return ResponseEntity.badRequest().body("Foydalanuvchi topilmadi!");
 //        }
+//        return userService.updateUser(userOpt.get().getId(), updatedUser);
 //
-//        // Encode password
-//        String encodedPassword = passwordEncoder.encode(loginDTO.getPassword());
-//
-//        // Get role from the repository
-//        Optional<Role> byId = roleRepository.findById(2); // Role ID = 2 (can be changed as needed)
-//        Role role = byId.orElseThrow(() -> new RuntimeException("Role not found"));
-//
-//        // Create RolePermissions
-//        RolePermission rolePermission1 = new RolePermission();
-//        rolePermission1.setPermission(PermissionEnum.VIEW_CATEGORY);
-//        rolePermission1.setRole(role);
-//        rolePermissionRepository.save(rolePermission1);
-//
-//        RolePermission rolePermission2 = new RolePermission();
-//        rolePermission2.setPermission(PermissionEnum.VIEW_PRODUCT);
-//        rolePermission2.setRole(role);
-//        rolePermissionRepository.save(rolePermission2);
-//
-//        // Create new user and save to repository
-//        User user = new User(loginDTO.getUsername(), encodedPassword, role);
-//        userRepository.save(user);
-//
-//        // Set authentication context for the new user
-//        SecurityContext securityContext = SecurityContextHolder.getContext();
-//        Authentication authentication = new UsernamePasswordAuthenticationToken(
-//                user,
-//                null,
-//                user.getAuthorities()
-//        );
-//        securityContext.setAuthentication(authentication);
-//
-//        // Optionally, you can set the authentication in the session
-//        // HttpSession session = request.getSession();
-//        // session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
 //    }
-//}
+
+    @PutMapping("/{id}")
+    public ApiResponse updateUser(@PathVariable Integer id, @RequestBody User updatedUser) {
+       return  userService.updateUser(id, updatedUser);
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
+        String response = userService.deleteUser(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{userId}/assignRole")
+    public ResponseEntity<String> assignRoleToUser(@PathVariable Integer userId, @RequestParam String roleName) {
+        String response = userService.assignRoleToUser(userId, roleName);
+        return ResponseEntity.ok(response);
+    }
+}
+

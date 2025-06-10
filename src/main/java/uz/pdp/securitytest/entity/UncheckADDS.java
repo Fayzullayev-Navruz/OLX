@@ -9,7 +9,7 @@ public class UncheckADDS implements Parent {
     private Integer id;
     @OneToOne(cascade = CascadeType.ALL)
     private Product product;
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private Managers managers;
 
     private Boolean isDeleted;

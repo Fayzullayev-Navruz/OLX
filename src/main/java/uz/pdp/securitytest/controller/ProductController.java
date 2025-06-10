@@ -1,7 +1,10 @@
 package uz.pdp.securitytest.controller;
 
 import jakarta.servlet.annotation.HttpMethodConstraint;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -9,12 +12,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import uz.pdp.securitytest.ApiResponse;
 import uz.pdp.securitytest.entity.*;
 import uz.pdp.securitytest.payload.ProductDTO;
 import uz.pdp.securitytest.repository.*;
+import uz.pdp.securitytest.service.ProductService;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,129 +34,64 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:63342")
 
 public class ProductController {
-    private final ProductRepository productRepository;
-    private final ChildCategoryRepository childCategoryRepository;
-    private final AttachmentRepository attachmentRepository;
-    private final ManagerRepository managerRepository;
-    private final UncheckADDSRepository uncheckADDSRepository;
-    private final String path = "src/main/resources/static/images/";
+    private final ProductService productService;
+    private final String path = "C:\\Users\\User\\IdeaProjects\\OLXk\\images\\";
 
-    public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository, ChildCategoryRepository childCategoryRepository, AttachmentRepository attachmentRepository, ManagerRepository managerRepository, UncheckADDSRepository uncheckADDSRepository) {
-        this.productRepository = productRepository;
-        this.childCategoryRepository = childCategoryRepository;
-
-        this.attachmentRepository = attachmentRepository;
-        this.managerRepository = managerRepository;
-        this.uncheckADDSRepository = uncheckADDSRepository;
+    public ProductController(CategoryRepository categoryRepository, ChildCategoryRepository childCategoryRepository, AttachmentRepository attachmentRepository, ManagerRepository managerRepository, UncheckADDSRepository uncheckADDSRepository, ProductService productService) {
+        this.productService = productService;
     }
 
-    //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_PRODUCT.name())")
+//    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name(), " +
+//            "T(uz.pdp.securitytest.enums.PermissionEnum).VIEW_PRODUCT.name())")
     @GetMapping("/{childCategoryId}")
-    public List<ProductDTO> read(@PathVariable Integer childCategoryId) {
+    public ApiResponse read(@PathVariable Integer childCategoryId) {
 
-        List<Product> matchingProducts = productRepository.findAll().stream().filter(product -> product.getChildCategory().getId().equals(childCategoryId)).collect(Collectors.toList());
-        List<ProductDTO> productDTOS = new ArrayList<>();
-        matchingProducts.forEach(product -> {
-            ProductDTO productDTO = new ProductDTO();
-            productDTO.setId(product.getId());
-            productDTO.setName(product.getName());
-            productDTO.setPrice(product.getPrice());
-            String filePath = product.getAttachment().getFilePath();
-            filePath = "http://localhost:8080/" + filePath;
-            productDTO.setImageUrl(filePath);
-            productDTO.setChildCategory(product.getChildCategory());
-            productDTOS.add(productDTO);
-        });
+        List<ProductDTO> productDTOS = productService.getProductDTOS(childCategoryId);
 
-        return productDTOS;
+        return new ApiResponse<>(HttpStatus.OK.toString(), productDTOS);
     }
 
-    //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CREATE_PRODUCT.name())")
-    @PostMapping("/add/{categoryId}")
-    public void create(
-            @PathVariable Integer categoryId,
-            @RequestParam String name, @RequestParam String description, @RequestParam Double price, @RequestParam(required = false) MultipartFile image
+
+    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name(), " +
+            "T(uz.pdp.securitytest.enums.PermissionEnum).CREATE_PRODUCT.name())")
+    @PostMapping("/add")
+    public ApiResponse create(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("price") double price,
+            @RequestParam("category") Integer categoryId,
+            @RequestParam("childCategory") Integer childCategoryId,
+            @RequestParam(value = "image",required = false) MultipartFile image
     ) throws IOException {
-
-        ChildCategory childCategory = childCategoryRepository.findById(categoryId).get();
-
-        Product product = new Product();
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
-
-        if (image != null) {
-            String contentType = image.getContentType();
-            long size = image.getSize();
-            String originalFilename = image.getOriginalFilename();
-            String path1 = path + UUID.randomUUID() + originalFilename;
-            Attachment save1 = attachmentRepository.save(new Attachment(originalFilename, contentType, path1, size));
-            product.setAttachment(save1);
-
-        }
-        productRepository.save(product);
-        Managers lazy = managerRepository.findLazy();
-        UncheckADDS uncheckADDS = new UncheckADDS();
-        uncheckADDS.setManagers(lazy);
-        uncheckADDS.setProduct(product);
-        uncheckADDSRepository.save(uncheckADDS);
-
-        read(product.getId());
-
+        ProductDTO productDTO = productService.create(name, description, price, categoryId, childCategoryId, image);
+        return new ApiResponse<>(HttpStatus.CREATED.toString(), productDTO);
     }
 
 
-    //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_PRODUCT.name())")
+    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name(), " +
+            "T(uz.pdp.securitytest.enums.PermissionEnum).EDIT_PRODUCT.name())")
     @PostMapping("/update")
-    public void update(@RequestParam Integer id, @RequestParam String name, @RequestParam Double price, @RequestParam(required = false) MultipartFile image) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setName(name);
-        product.setPrice(price);
-
-        if (image != null) {
-            String contentType = image.getContentType();
-            long size = image.getSize();
-            String originalFilename = image.getOriginalFilename();
-            String path1 = path + UUID.randomUUID() + originalFilename;
-            Attachment save1 = attachmentRepository.save(new Attachment(originalFilename, contentType, path1, size));
-            product.setAttachment(save1);
-
-        }
-        productRepository.save(product);
-        List<Product> all = productRepository.findAll();
-
-        read(product.getId());
+    public ApiResponse update(@RequestParam Integer id, @RequestParam String name, @RequestParam Double price, @RequestParam(required = false) MultipartFile image) {
+        ProductDTO update = productService.update(id, name, price, image);
+        return new ApiResponse<>(HttpStatus.OK.toString(), update);
     }
 
-    //    @PreAuthorize("hasAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).DELETE_PRODUCT.name())")
-    @GetMapping("/delete/{id}")
-    public void delete(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        Optional<Product> byId = productRepository.findById(id);
-        Product product = byId.get();
-        productRepository.delete(byId.get());
-        read(byId.get().getChildCategory().getId());
-        redirectAttributes.addFlashAttribute("message", "Product deleted successfully!");
-
-
-        read(product.getId());
-
+    @PreAuthorize("hasAnyAuthority(T(uz.pdp.securitytest.enums.PermissionEnum).CRUD_ALL.name(), " +
+            "T(uz.pdp.securitytest.enums.PermissionEnum).DELETE_PRODUCT.name())")
+    @DeleteMapping("/delete/{id}")
+    public void delete(@PathVariable Integer id) {
+        productService.delete(id);
     }
 
     @GetMapping("/myOwn")
-    public List<ProductDTO> readAll() {
-        List<Product> products = productRepository.findbyUserID(1);
-        List<ProductDTO> productDTOS = new ArrayList<>();
-        products.forEach(product -> {
-            ProductDTO productDTO = new ProductDTO();
-            productDTO.setId(product.getId());
-            productDTO.setName(product.getName());
-            productDTO.setPrice(product.getPrice());
-            productDTO.setDescription(product.getDescription());
-            String filePath = product.getAttachment().getFilePath();
-            productDTO.setImageUrl(filePath);
-            productDTO.setChildCategory(product.getChildCategory());
-            productDTOS.add(productDTO);
-        });
-        return productDTOS;
+    public ApiResponse readAll() {
+        List<ProductDTO> productDTOS = productService.readAll();
+        return new ApiResponse<>(HttpStatus.OK.toString(), productDTOS);
+    }
+
+    @GetMapping("/one/{productId}")
+    public ApiResponse readOne(@PathVariable Integer productId) {
+        ProductDTO productDTO = productService.readOne(productId);
+        return new ApiResponse<>(HttpStatus.OK.toString(), productDTO);
     }
 }

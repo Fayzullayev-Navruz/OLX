@@ -15,11 +15,10 @@ public interface UserMapper {
 
     List<User> toUsers(List<UserDto> userDto);
 
+    //    @Mapping(target = "roleDTO.permissions" , source = "role.rolePermissions")
     UserDto toUserDto(User user);
 
     List<UserDto> toUserDto(List<User> users);
 
     @Mapping(target = "id", ignore = true)
-    void updateUser(UserDto userDto,  @MappingTarget User user);
-
-}
+    void updateUser(UserDto userDto,  @MappingTarget User user);}

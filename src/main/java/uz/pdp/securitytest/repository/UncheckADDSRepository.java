@@ -12,4 +12,6 @@ public interface UncheckADDSRepository extends JpaRepository<UncheckADDS, Intege
 
     @Query("select p from UncheckADDS  p where p.product.id=:productId")
     UncheckADDS findbyProductID(Integer productId);
+    @Query("select c from UncheckADDS c where  c.product.is_check=true and c.managers.id=:managersId")
+    List<UncheckADDS> findByManagers_IdeandChecked(Integer managersId);
 }

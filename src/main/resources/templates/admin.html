@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Foydalanuvchilarni boshqarish</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 40px;
+        }
+        .search-section {
+            margin-top: 20px;
+        }
+        th {
+            cursor: pointer;
+            user-select: none;
+        }
+        .sort-indicator {
+            font-size: 0.8em;
+        }
+        #getAllUsersBtn {
+            font-size: 1.1em;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Admin Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand">Admin Panel</span>
+            <div>
+                <button class="btn btn-danger" onclick="logout()">Chiqish</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="row mb-3">
+            <div class="col-md-2 mb-2">
+                <input type="text" id="searchId" class="form-control" placeholder="ID bo'yicha qidirish">
+            </div>
+            <div class="col-md-3 mb-2">
+                <input type="text" id="searchEmail" class="form-control" placeholder="Email bo'yicha qidirish">
+            </div>
+            <div class="col-md-3 mb-2">
+                <input type="text" id="searchUsername" class="form-control" placeholder="Username bo'yicha qidirish">
+            </div>
+            <div class="col-md-4 mb-2">
+                <button class="btn btn-primary w-100" onclick="searchUsers()">Qidirish</button>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4 mb-2">
+                <input type="text" id="searchFullName" class="form-control" placeholder="To'liq ism bo'yicha qidirish">
+            </div>
+            <div class="col-md-4 mb-2">
+                <input type="text" id="searchPhone" class="form-control" placeholder="Telefon bo'yicha qidirish">
+            </div>
+            <div class="col-md-4 mb-2">
+                <button class="btn btn-secondary w-100" onclick="clearSearch()">Qidirishni tozalash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="user-table">
+        <h3>Foydalanuvchi ro'yxati</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th onclick="sortById()">ID <span id="idSortIndicator" class="sort-indicator"></span></th>
+                <th onclick="sortByUsername()">Username <span id="usernameSortIndicator" class="sort-indicator"></span></th>
+                <th onclick="sortByEmail()">Email <span id="emailSortIndicator" class="sort-indicator"></span></th>
+                <th onclick="sortByFullName()">To'liq ism <span id="fullNameSortIndicator" class="sort-indicator"></span></th>
+                <th onclick="sortByPhone()">Telefon <span id="phoneSortIndicator" class="sort-indicator"></span></th>
+                <th onclick="sortByRoles()">Rollar <span id="rolesSortIndicator" class="sort-indicator"></span></th>
+                <th>Funksiyalar</th>
+            </tr>
+            </thead>
+            <tbody id="usersTableBody">
+            <!-- Foydalanuvchilar shu yerda aks etadi -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Rolni tayinlash modal oynasi -->
+    <div class="modal fade" id="assignRoleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rolni tayinlash</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+                </div>
+                <div class="modal-body">
+                    <select class="form-select" id="roleSelectAssign">
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="MANAGER">MANAGER</option>
+                        <option value="USER">USER</option>
+                    </select>
+                    <input type="hidden" id="assignUserId">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="assignRole()">Tasdiqlash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Foydalanuvchini yangilash modal oynasi -->
+    <div class="modal fade" id="updateUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Foydalanuvchini yangilash</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="updateUserId">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="updateUsername" class="form-control" placeholder="Username">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="updateEmail" class="form-control" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">To'liq ism</label>
+                        <input type="text" id="updateFullName" class="form-control" placeholder="Masalan: Aliyev Ali">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefon raqami</label>
+                        <input type="text" id="updatePhone" class="form-control" placeholder="+998XXXXXXXXX">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yangi parol</label>
+                        <input type="password" id="updatePassword" class="form-control" placeholder="Agar parolni yangilamoqchi bo'lmasangiz bo'sh qoldiring">
+                        <small class="text-muted">Kamida 8 ta belgi, 1 ta harf, 1 ta raqam va maxsus belgi kerak.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" onclick="updateUser()">Yangilash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let sortIdAsc = true;
+    let sortUsernameAsc = true;
+    let sortEmailAsc = true;
+    let sortFullNameAsc = true;
+    let sortPhoneAsc = true;
+    let sortRolesAsc = true;
+    let allUsers = [];
+
+    // Tokenni qo'shish bilan fetch funksiyasi
+    async function fetchWithToken(url, options = {}) {
+        const token = localStorage.getItem('token'); // Tokenni localStorage dan olish
+        if (!token) {
+            alert("Siz tizimga kirmagansiz. Iltimos, avval tizimga kiring.");
+            window.location.href = "http://localhost:63342/OLXk/security-test/templates/login.html"; // Login sahifasiga yo'naltirish
+            return;
+        }
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}` // Tokenni headerga qo'shish
+        };
+        return fetch(url, options);
+    }
+
+    // Foydalanuvchilarni yuklash
+    async function loadUsers() {
+        try {
+            const response = await fetchWithToken("http://localhost:8080/userData");
+            allUsers = await response.json();
+            renderUsers(allUsers);
+            clearSortIndicators();
+        } catch (error) {
+            alert("Xatolik: " + error.message);
+        }
+    }
+
+    // Foydalanuvchilarni jadvalga chiqarish
+    function renderUsers(users) {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
+        if (!Array.isArray(users)) {
+            users = [];
+        }
+        users.forEach(user => {
+            const row = `
+                <tr>
+                  <td>${user.id}</td>
+                  <td>${user.username}</td>
+                  <td>${user.email}</td>
+                  <td>${user.fullName || ""}</td>
+                  <td>${user.phoneNumber || ""}</td>
+                  <td>${user.roles ? user.roles.map(r => r.name).join(", ") : ""}</td>
+                  <td>
+                    <button class="btn btn-warning btn-sm" onclick="openAssignRoleModal(${user.id})">Rolni tayinlash</button>
+                    <button class="btn btn-info btn-sm" onclick="openUpdateModalById(${user.id})">Yangilash</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">O'chirish</button>
+                  </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // Foydalanuvchini o'chirish
+    function deleteUser(userId) {
+        if (!confirm("Foydalanuvchini o'chirmoqchimisiz?")) return;
+        fetchWithToken(`http://localhost:8080/userData/${userId}`, { method: "DELETE" })
+            .then(response => {
+                if (response.ok) {
+                    alert("Foydalanuvchi muvaffaqiyatli o'chirildi!");
+                    loadUsers();
+                } else {
+                    alert("Foydalanuvchini o'chirishda xatolik yuz berdi!");
+                }
+            })
+            .catch(error => alert("Xatolik: " + error.message));
+    }
+
+    // Chiqish funksiyasi
+    function logout() {
+        localStorage.removeItem('token'); // Tokenni o'chirish
+        window.location.href = "/"; // Asosiy sahifaga yo'naltirish
+    }
+
+    // Sahifa yuklanganda foydalanuvchilarni yuklash
+    window.onload = async () => {
+        await loadUsers();
+    };
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -152,7 +152,7 @@
     <!-- Right Section - Action Buttons -->
     <div class="right-section">
         <div class="btn-group">
-            <button onclick="enableEdit()">Edit Info</button> <!-- Only Edit Info remains -->
+            <button onclick="enableEdit()">Edit Info</button>
             <button onclick="deleteUser()">Delete Account</button>
             <button onclick="viewMessages()">View Messages</button>
             <button onclick="viewAds()">View Ads</button>
@@ -161,8 +161,13 @@
 </div>
 
 <script>
-    // API URL
-    const apiUrl = "http://localhost:8080/userData";
+    const token = localStorage.getItem('authToken'); // Retrieve the token from localStorage
+    if (!token) {
+        alert("You are not logged in.");
+        window.location.href = '/login.html'; // Redirect to login page if no token
+    }
+
+    const apiUrl = "http://localhost:8080/userData"; // API URL
 
     let userId = null; // Variable to hold the user ID
 
@@ -170,10 +175,18 @@
     function getUserData() {
         fetch(apiUrl, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`, // Include the token in the request
+                'Content-Type': 'application/json'
+            },
             credentials: 'include' // Include cookies for authentication
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+                return response.json();
+            })
             .then(data => {
                 userId = data.id; // Set the userId variable to the user's ID
 
@@ -184,7 +197,10 @@
                 document.getElementById('phone').value = data.phone;
                 document.getElementById('password').value = ''; // Ensure password field is empty for security
             })
-            .catch(error => alert('Failed to load user data.'));
+            .catch(error => {
+                alert('Failed to load user data. Please try again.');
+                console.error(error);
+            });
     }
 
     // Enable editing of the user info fields
@@ -212,7 +228,10 @@
 
         fetch(apiUrl, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`, // Include the token in the request
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(updatedData)
         })
             .then(response => {
@@ -231,7 +250,10 @@
         if (confirm("Are you sure you want to delete your account?")) {
             fetch(`${apiUrl}/${userId}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the request
+                    'Content-Type': 'application/json'
+                }
             })
                 .then(response => {
                     if (response.ok) {
